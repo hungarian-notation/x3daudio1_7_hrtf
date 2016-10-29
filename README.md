@@ -26,9 +26,10 @@ Works well now. No tricky things there. Has pretty complex audio mixing graph, b
 ##### Arma 2
 Has glitches. I haven't investigated them yet. Most sounds were fine, but HMMWV's engine sound was coming from a completely different direction when I was playing. BattleEye must be disabled in order to work.
 
-##### TES V Skyrim
+##### TES V Skyrim (including Special Edition)
 Works perfectly now.
 Skyrim always creates Mastering voice as six-channel. We override it to two-channel.
+For Special Edition use x64 version.
 
 ##### Fallout 4
 Works well. Uses the same codebase as Skyrim, so nothing different here. The only difference is x64 platform.
