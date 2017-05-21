@@ -6,8 +6,8 @@
 #include <stdexcept>
 #include "mhook/mhook.h"
 
-#include "proxy\XAudio2ProxyFactory.h"
-#include "proxy\XAudio2Proxy.h"
+#include "proxy/XAudio2ProxyFactory.h"
+#include "proxy/XAudio2Proxy.h"
 
 #define WIN32_LEAN_AND_MEAN
 #include <Windows.h>

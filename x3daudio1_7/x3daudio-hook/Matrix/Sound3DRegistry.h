@@ -10,12 +10,17 @@ public:
 	static Sound3DRegistry& GetInstance();
 
 public:
+	Sound3DRegistry()
+		: m_id_counter(0)
+	{
+		
+	}
 	virtual sound_id CreateEntry(const Sound3DEntry & entry) override;
 	virtual Sound3DEntry GetEntry(const sound_id & id) const override;
 	virtual void Clear() override;
 
 private:
-	short m_id_counter;
+	unsigned short m_id_counter;
 	std::unordered_map<sound_id, Sound3DEntry> m_registry;
 	mutable std::mutex m_mutex;
 

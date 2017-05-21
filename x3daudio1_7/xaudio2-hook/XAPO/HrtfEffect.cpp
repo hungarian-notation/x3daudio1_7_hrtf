@@ -196,7 +196,8 @@ void HrtfXapoEffect::convolve(const UINT32 frame_index, DirectionData& hrtf_data
 	output = sum;
 #else
 	float sum = 0.0f;
-	for (UINT32 i = 0; i < hrtf_data.impulse_response.size(); i++)
+	const auto size = hrtf_data.impulse_response.size();
+	for (UINT32 i = 0; i < size; i++)
 	{
 		sum += m_signal[start_signal_index - i] * hrtf_data.impulse_response[i];
 	}

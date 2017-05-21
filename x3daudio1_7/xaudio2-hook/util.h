@@ -117,7 +117,7 @@ inline XAUDIO2_VOICE_SENDS from_voice_sends(VoiceSends & sends)
 
 	XAUDIO2_VOICE_SENDS sendsStruct;
 	sendsStruct.SendCount = static_cast<UINT32>(sends.getVoices().size());
-	sendsStruct.pSends = const_cast<XAUDIO2_SEND_DESCRIPTOR*>(&*sends.getVoices().begin());
+	sendsStruct.pSends = sends.getVoices().empty() ? nullptr : const_cast<XAUDIO2_SEND_DESCRIPTOR*>(&*sends.getVoices().begin());
 	return sendsStruct;
 }
 

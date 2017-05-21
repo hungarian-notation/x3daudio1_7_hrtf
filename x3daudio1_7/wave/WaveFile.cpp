@@ -2,6 +2,7 @@
 #include "WaveFile.h"
 
 #include "logger.h"
+#include <cstddef>
 
 struct wavfile_header
 {

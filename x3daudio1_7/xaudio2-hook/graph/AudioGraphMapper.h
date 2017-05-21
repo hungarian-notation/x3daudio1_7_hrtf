@@ -8,7 +8,7 @@
 #include <xaudio2-hook/common_types.h>
 
 
-class ISound3DRegistry;
+class ISpatializedDataExtractor;
 class XAudio2SourceVoiceProxy;
 class XAudio2VoiceProxy;
 
@@ -49,7 +49,7 @@ class AudioGraphMapper
 {
 public:
 	// AudioGraphMapper does not own xaudio
-	AudioGraphMapper(IXAudio2 * xaudio, ISound3DRegistry * spatialSoundRegistry);
+	AudioGraphMapper(IXAudio2 * xaudio, ISpatializedDataExtractor * spatializedDataExtractor);
 	AudioGraphMapper(const AudioGraphMapper &) = delete;
 	AudioGraphMapper& operator=(const AudioGraphMapper& other) = delete;
 
@@ -80,7 +80,7 @@ public:
 
 private:
 	IXAudio2 * m_xaudio;
-	ISound3DRegistry * m_spatialSoundRegistry;
+	ISpatializedDataExtractor * _spatializedDataExtractor;
 	std::map<IXAudio2Voice*, std::unique_ptr<Node>> m_nodes;
 	Node * m_masteringNode;
 	EdgeRepository<Node*> m_edges;

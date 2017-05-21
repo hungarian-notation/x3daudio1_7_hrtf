@@ -7,7 +7,8 @@
 #include "proxy/XAudio2SourceVoiceProxy.h"
 #include "proxy/XAudio2SubmixVoiceProxy.h"
 
-#include "interop/ChannelMatrixMagic.h"
+#include "ISpatializedDataExtractor.h"
+
 #include "wave/WaveFile.h"
 
 #include "util.h"
@@ -19,12 +20,11 @@
 XAUDIO2_VOICE_SENDS AudioGraphMapper::_emptySends = empty_sends();
 
 
-AudioGraphMapper::AudioGraphMapper(IXAudio2* xaudio, ISound3DRegistry * spatialSoundRegistry)
+AudioGraphMapper::AudioGraphMapper(IXAudio2 * xaudio, ISpatializedDataExtractor * spatializedDataExtractor)
 	: m_xaudio(xaudio)
-	, m_spatialSoundRegistry(spatialSoundRegistry)
-	, m_masteringNode(nullptr)
-{
-}
+	, _spatializedDataExtractor(spatializedDataExtractor)
+	, m_masteringNode(nullptr) 
+{}
 
 AudioGraphMapper::~AudioGraphMapper()
 {
@@ -261,18 +261,18 @@ void AudioGraphMapper::setupCommonCallbacks(XAudio2VoiceProxy* proxyVoice, const
 
 	proxyVoice->onSetOutputMatrix = [this](XAudio2VoiceProxy * source, IXAudio2Voice * pDestinationProxy, UINT32 operationSet)
 	{
-		Node* node = getNodeForProxyVoice(source->asXAudio2Voice());
+		Node * const node = getNodeForProxyVoice(source->asXAudio2Voice());
 
 		if (pDestinationProxy == nullptr && node->tailVoices.size() != 1)
 			throw std::logic_error("Cannot set output matrix to voice 'nullptr' when the number of output voices is not 1.");
 
-		Node* destinationNode = pDestinationProxy ? getNodeForProxyVoice(pDestinationProxy) : *m_edges.getSuccessors(node).begin();
-
-		auto clientMatrix = source->getOutputMatrix(pDestinationProxy);
+		Node * const destinationNode = pDestinationProxy ? getNodeForProxyVoice(pDestinationProxy) : *m_edges.getSuccessors(node).begin();
 
 		TailVoiceDescriptor & tailVoiceDescriptor = node->tailVoices.at(destinationNode);
 
-		if (does_matrix_contain_id(clientMatrix))
+		const auto spatializedData = _spatializedDataExtractor->ExtractSpatialData(source, pDestinationProxy);
+
+		if (spatializedData.present)
 		{
 			if (node->mainOutputChannelsCount > 2)
 				logger::logRelease(L"WARNING: onSetOutputMatrix ", source, " Trying to spatialize voice with more than two channels");
@@ -300,15 +300,11 @@ void AudioGraphMapper::setupCommonCallbacks(XAudio2VoiceProxy* proxyVoice, const
 				tailVoiceDescriptor.isSpatialized = true;
 			}
 
-			sound_id id = extract_sound_id(clientMatrix);
-
-			auto sound3d = m_spatialSoundRegistry->GetEntry(id);
-
 			HrtfXapoParam params;
-			params.volume_multiplier = sound3d.volume_multiplier;
-			params.elevation = sound3d.elevation;
-			params.azimuth = sound3d.azimuth;
-			params.distance = sound3d.distance;
+			params.volume_multiplier = spatializedData.volume_multiplier;
+			params.elevation = spatializedData.elevation;
+			params.azimuth = spatializedData.azimuth;
+			params.distance = spatializedData.distance;
 
 			tailVoiceDescriptor.voice->SetEffectParameters(0, &params, sizeof(params), XAUDIO2_COMMIT_NOW);
 			tailVoiceDescriptor.voice->EnableEffect(0, XAUDIO2_COMMIT_NOW);
@@ -325,6 +321,8 @@ void AudioGraphMapper::setupCommonCallbacks(XAudio2VoiceProxy* proxyVoice, const
 
 				tailVoiceDescriptor.isSpatialized = false;
 			}
+
+			const auto clientMatrix = source->getOutputMatrix(pDestinationProxy);
 
 			ChannelMatrix matrix;
 
