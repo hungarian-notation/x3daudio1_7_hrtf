@@ -191,3 +191,4 @@ ModelManifest.xml
 x3daudio1_7/log.txt
 *.opendb
 /x3daudio1_7.VC.db
+/.vs/

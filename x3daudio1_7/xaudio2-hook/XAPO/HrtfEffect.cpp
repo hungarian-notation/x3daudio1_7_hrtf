@@ -224,7 +224,7 @@ void HrtfXapoEffect::Process(UINT32 InputProcessParameterCount, const XAPO_PROCE
 	auto pOutput = reinterpret_cast<float*>(pOutputProcessParameters[0].pBuffer);
 	const bool is_input_valid = pInputProcessParameters[0].BufferFlags == XAPO_BUFFER_VALID;
 
-	auto params = reinterpret_cast<const HrtfXapoParam *>(BeginProcess());
+	const auto params = reinterpret_cast<const HrtfXapoParam *>(BeginProcess());
 
 	if (IsEnabled && m_hrtf_data != nullptr)
 	{

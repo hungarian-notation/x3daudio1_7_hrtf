@@ -32,6 +32,9 @@ inline float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, float distanc
 	if (normalized_distance >= 1.0f)
 		return points[pointCount - 1].DSPSetting;
 
+#if false
+
+	// this part works incorrectly
 	std::size_t furtherPointIndex = pointCount - 1;
 	for (std::size_t i = 1; i < pointCount; i++)
 	{
@@ -42,8 +45,9 @@ inline float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, float distanc
 		}
 	}
 
-	float t = (normalized_distance - points[furtherPointIndex - 1].Distance) / (points[furtherPointIndex].Distance - points[furtherPointIndex - 1].Distance);
+	const float t = (normalized_distance - points[furtherPointIndex - 1].Distance) / (points[furtherPointIndex].Distance - points[furtherPointIndex - 1].Distance);
 	return points[furtherPointIndex - 1].DSPSetting  * (1.0f - t) + points[furtherPointIndex].Distance * t;
+#else
 
 	const auto greater_point = std::upper_bound(pEmitter->pVolumeCurve->pPoints, pEmitter->pVolumeCurve->pPoints + pEmitter->pVolumeCurve->PointCount, normalized_distance, [=](const auto & dist, const auto & point) { return dist < point.Distance; });
 	if (greater_point != pEmitter->pVolumeCurve->pPoints + pEmitter->pVolumeCurve->PointCount)
@@ -64,6 +68,7 @@ inline float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, float distanc
 	{
 		return (greater_point - 1)->DSPSetting;
 	}
+#endif
 }
 
 inline SpatialData CommonX3DAudioCalculate(const X3DAUDIO_LISTENER * pListener, const X3DAUDIO_EMITTER * pEmitter, UINT32 Flags, X3DAUDIO_DSP_SETTINGS * pDSPSettings)

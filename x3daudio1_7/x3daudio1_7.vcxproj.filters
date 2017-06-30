@@ -189,6 +189,9 @@
     <ClInclude Include="x3daudio-hook\Sequenced\SequencedX3DAudioProxy.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="x3daudio-hook\common.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -266,10 +269,10 @@
     <ClCompile Include="x3daudio-hook\Matrix\Sound3DRegistry.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="xaudio2-hook\graph\application.cpp">
+    <ClCompile Include="x3daudio-hook\Sequenced\SequencedX3DAudioProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="x3daudio-hook\Sequenced\SequencedX3DAudioProxy.cpp">
+    <ClCompile Include="application.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

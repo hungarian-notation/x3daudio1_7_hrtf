@@ -15,11 +15,9 @@ public:
 	SpatialData ExtractSpatialData(XAudio2VoiceProxy * source, IXAudio2Voice * pDestinationProxy) override;
 
 private:
-	X3DAUDIO_HANDLE m_handle;
 	ISound3DRegistry * m_registry;
 
 private:
 	MatrixEncodingX3DAudioProxy(const MatrixEncodingX3DAudioProxy &) = delete;
 	MatrixEncodingX3DAudioProxy& operator=(const MatrixEncodingX3DAudioProxy &) = delete;
-	float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, const float distance);
 };
