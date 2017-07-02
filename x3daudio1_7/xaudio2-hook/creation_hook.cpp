@@ -9,9 +9,6 @@
 #include "proxy/XAudio2ProxyFactory.h"
 #include "proxy/XAudio2Proxy.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
 //#define CREATE_AUTHENTIC_DEBUG_XAUDIO
 
 DEFINE_CLSID(XAudio2_0, fac23f48, 31f5, 45a8, b4, 9b, 52, 25, d6, 14, 01, aa);
