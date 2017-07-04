@@ -13,7 +13,7 @@ void SequencedX3DAudioProxy::CorrectVolume(SpatialData & spatialDataCopy, const 
 			volumeSum += clientMatrix.getValue(srcIndex, destIndex);
 		}
 	}
-	spatialDataCopy.volume_multiplier = volumeSum;
+	spatialDataCopy.volume_multiplier = volumeSum * 0.5f; // because we distribute power over two channels. But I'm not sure this is the right place to place this distribution.
 }
 
 SpatialData SequencedX3DAudioProxy::ExtractSpatialData(XAudio2VoiceProxy * source, IXAudio2Voice * pDestinationProxy)
