@@ -38,6 +38,7 @@ namespace Hook
 	{
 		logger::logDebug("X3DAudioInitialize");
 		Instance->proxy = &getX3DAudioProxy();
+		Instance->proxy->X3DAudioInitialize(SpeakerChannelMask, SpeedOfSound);
 	}
 
 	extern "C" __declspec(dllexport) void STDAPIVCALLTYPE X3DAudioCalculate(const X3DAUDIO_CUSTOM_HANDLE Instance, _In_ const X3DAUDIO_LISTENER * pListener, _In_ const X3DAUDIO_EMITTER * pEmitter, UINT32 Flags, _Inout_ X3DAUDIO_DSP_SETTINGS * pDSPSettings)
