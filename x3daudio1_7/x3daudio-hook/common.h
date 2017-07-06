@@ -7,6 +7,11 @@
 #include "graph/ISpatializedDataExtractor.h"
 #include "logger.h"
 
+inline math::vector3 to_vector3(const X3DAUDIO_VECTOR & vector)
+{
+	return math::vector3{ vector.x, vector.y, vector.z };
+}
+
 inline float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, float distance)
 {
 	const float normalized_distance = distance / pEmitter->CurveDistanceScaler;
@@ -71,13 +76,60 @@ inline float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, float distanc
 #endif
 }
 
-inline SpatialData CommonX3DAudioCalculate(const X3DAUDIO_LISTENER * pListener, const X3DAUDIO_EMITTER * pEmitter, UINT32 Flags, X3DAUDIO_DSP_SETTINGS * pDSPSettings)
+inline void CalculateDelay(const struct X3DAUDIO_LISTENER *pListener, const struct X3DAUDIO_EMITTER *pEmitter, struct X3DAUDIO_DSP_SETTINGS *pDspSettings)
+{
+	//const auto listenerFront = to_vector3(pListener->OrientFront);
+	//const auto listenerTopInput = to_vector3(pListener->OrientTop);
+
+	//const auto listenerRight = math::cross(listenerTopInput, listenerFront);
+	//const auto listenerTop = math::cross(listenerRight, listenerFront);
+
+	//const auto listenerToEmitter = to_vector3(pEmitter->Position) - to_vector3(pListener->Position);
+	//const auto listenerToEmitterDistanceSquared = math::length2(listenerToEmitter);
+	//const auto listenerFrontDotListenerToEmitter = math::dot(listenerFront, listenerToEmitter);
+
+	pDspSettings->pDelayTimes[0] = pDspSettings->pDelayTimes[1] = 0.0f;
+}
+
+
+inline void CalculateDopplerFactor(float speedOfSound, const struct X3DAUDIO_LISTENER *pListener, const struct X3DAUDIO_EMITTER *pEmitter, struct X3DAUDIO_DSP_SETTINGS *pDspSettings)
+{
+	const auto emitterToListener = to_vector3(pListener->Position) - to_vector3(pEmitter->Position);
+	const auto emitterToListenerDistance = math::length(emitterToListener);
+
+	if (emitterToListenerDistance > 0.00000011920929)
+	{
+		const float maxVelocityComponent = std::nextafter(speedOfSound, 0.0f);
+
+		const float listenerVelocityComponent = math::dot(emitterToListener, to_vector3(pListener->Velocity)) / emitterToListenerDistance;
+		const float emitterVelocityComponent = math::dot(emitterToListener, to_vector3(pEmitter->Velocity)) / emitterToListenerDistance;
+		const float scaledListenerVelocityComponent = std::min(pEmitter->DopplerScaler * listenerVelocityComponent, maxVelocityComponent);
+		const float scaledEmitterVeclocityComponent = std::min(pEmitter->DopplerScaler * emitterVelocityComponent, maxVelocityComponent);
+
+		pDspSettings->ListenerVelocityComponent = listenerVelocityComponent;
+		pDspSettings->EmitterVelocityComponent = emitterVelocityComponent;
+		pDspSettings->DopplerFactor = (speedOfSound - scaledListenerVelocityComponent) / (speedOfSound - scaledEmitterVeclocityComponent);
+	}
+	else
+	{
+		pDspSettings->DopplerFactor = 1.0f;
+		pDspSettings->ListenerVelocityComponent = 0.0f;
+		pDspSettings->EmitterVelocityComponent = 0.0f;
+	}
+}
+
+
+inline SpatialData CommonX3DAudioCalculate(float speedOfSound, const X3DAUDIO_LISTENER * pListener, const X3DAUDIO_EMITTER * pEmitter, UINT32 Flags, X3DAUDIO_DSP_SETTINGS * pDSPSettings)
 {
 	if (Flags & X3DAUDIO_CALCULATE_DELAY)
 	{
 		_ASSERT(pDSPSettings->pDelayTimes != nullptr);
-		// The ITD is simulated with HRTF DSP, so here we just take the minimum one.
-		pDSPSettings->pDelayTimes[0] = pDSPSettings->pDelayTimes[1] = std::min(pDSPSettings->pDelayTimes[0], pDSPSettings->pDelayTimes[1]);
+		CalculateDelay(pListener, pEmitter, pDSPSettings);
+	}
+
+	if (Flags & X3DAUDIO_CALCULATE_DOPPLER)
+	{
+		CalculateDopplerFactor(speedOfSound, pListener, pEmitter, pDSPSettings);
 	}
 
 	// changing left-hand to ortodox right-hand

@@ -8,14 +8,18 @@
 
 
 MatrixEncodingX3DAudioProxy::MatrixEncodingX3DAudioProxy(ISound3DRegistry * registry)
-	: m_registry(registry)
+	: _registry(registry)
 {
 }
 
+void MatrixEncodingX3DAudioProxy::X3DAudioInitialize(UINT32 SpeakerChannelMask, FLOAT32 SpeedOfSound)
+{
+	_speedOfSound = SpeedOfSound;
+}
 
 void MatrixEncodingX3DAudioProxy::X3DAudioCalculate(const X3DAUDIO_LISTENER * pListener, const X3DAUDIO_EMITTER * pEmitter, UINT32 Flags, X3DAUDIO_DSP_SETTINGS * pDSPSettings)
 {
-	const auto spatialData = CommonX3DAudioCalculate(pListener, pEmitter, Flags, pDSPSettings);
+	const auto spatialData = CommonX3DAudioCalculate(_speedOfSound, pListener, pEmitter, Flags, pDSPSettings);
 
 	Sound3DEntry entry;
 	entry.azimuth = spatialData.azimuth;
@@ -23,7 +27,7 @@ void MatrixEncodingX3DAudioProxy::X3DAudioCalculate(const X3DAUDIO_LISTENER * pL
 	entry.elevation = spatialData.elevation;
 	entry.volume_multiplier = spatialData.volume_multiplier;
 
-	const auto id = m_registry->CreateEntry(entry);
+	const auto id = _registry->CreateEntry(entry);
 
 	embed_sound_id(pDSPSettings->pMatrixCoefficients, pDSPSettings->SrcChannelCount, pDSPSettings->DstChannelCount, id);
 }
@@ -38,7 +42,7 @@ SpatialData MatrixEncodingX3DAudioProxy::ExtractSpatialData(XAudio2VoiceProxy * 
 	{
 		const sound_id id = extract_sound_id(clientMatrix);
 
-		const auto sound3d = m_registry->GetEntry(id);
+		const auto sound3d = _registry->GetEntry(id);
 
 		SpatialData spatialData;
 		spatialData.present = true;

@@ -28,12 +28,15 @@ SpatialData SequencedX3DAudioProxy::ExtractSpatialData(XAudio2VoiceProxy * sourc
 	return spatialDataCopy;
 }
 
+void SequencedX3DAudioProxy::X3DAudioInitialize(UINT32 SpeakerChannelMask, FLOAT32 SpeedOfSound)
+{
+	_speedOfSound = SpeedOfSound;
+}
+
 
 void SequencedX3DAudioProxy::X3DAudioCalculate(const X3DAUDIO_LISTENER * pListener, const X3DAUDIO_EMITTER * pEmitter, UINT32 Flags, X3DAUDIO_DSP_SETTINGS * pDSPSettings)
 {
-	//pDSPSettings->DopplerFactor = 1.0f;
-	//pDSPSettings->ReverbLevel = 0.0f;
-	_lastSpatialData = CommonX3DAudioCalculate(pListener, pEmitter, Flags, pDSPSettings);
+	_lastSpatialData = CommonX3DAudioCalculate(_speedOfSound, pListener, pEmitter, Flags, pDSPSettings);
 
 
 	const UINT32 channelCount = pDSPSettings->DstChannelCount * pDSPSettings->SrcChannelCount;
