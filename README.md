@@ -1,5 +1,5 @@
 # X3DAudio HRTF
-## HRTF for Arma 3, Skyrim, Fallout 4 and potentially other titles using X3dAudio + XAudio2 (except ones running on Unreal Engine).
+## HRTF for Arma 3, Skyrim, Fallout 4 and potentially other titles using X3dAudio + XAudio2 (including ones running on Unreal Engine 4 and UDK).
 
 [![Youtube video](https://s15.postimg.org/slkiotxp7/skyrim.png)](https://www.youtube.com/watch?v=jJPpqssMPl0)
 [![Youtube video](http://s24.postimg.org/iozt6p9ut/skyrim_fake_youtube.png)](http://www.youtube.com/watch?v=hsCgaMeTVG0)
@@ -35,6 +35,8 @@ For Special Edition use x64 version.
 ##### Fallout 4
 Works well. Uses the same codebase as Skyrim, so nothing different here. The only difference is x64 platform.
 
+##### Unreal Engine 4 and UDK based games
+Works well. UE does not pass distance to X3DAudio, only direction. The distance between listener and emitter is always 1. UE calculates volume by itself, so the volume is passed in the matrix.
 
 ### Legal Stuff
 #### X3DAudio HRTF
