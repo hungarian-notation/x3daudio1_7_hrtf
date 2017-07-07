@@ -7,7 +7,7 @@
 
 
 :set_variables
-@set "VERSION=2.1"
+@set "VERSION=2.2"
 @set "PRODUCT_NAME=xaudio_hrtf"
 
 
