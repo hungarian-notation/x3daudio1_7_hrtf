@@ -112,7 +112,7 @@ void HrtfXapoEffect::process_valid_buffer(const float * pInput, float * pOutput,
 	{
 		for (UINT32 i = 0; i < frame_count; i++)
 		{
-			m_signal[i + m_history_size] = (pInput[i * 2 + 0] + pInput[i * 2 + 1]) * 0.5f * volume;
+			m_signal[i + m_history_size] = (pInput[i * 2 + 0] + pInput[i * 2 + 1]) * volume;
 		}
 	}
 
