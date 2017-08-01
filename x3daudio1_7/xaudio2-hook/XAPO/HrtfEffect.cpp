@@ -53,9 +53,9 @@ HrtfXapoEffect::HrtfXapoEffect(const std::shared_ptr<IHrtfDataSet> & hrtf_data) 
 	, m_buffers_per_history(0)
 	, m_history_size(0)
 {
-	m_params[0] = { 0 };
-	m_params[1] = { 0 };
-	m_params[2] = { 0 };
+	m_params[0] = { };
+	m_params[1] = { };
+	m_params[2] = { };
 	m_signal.reserve(192);
 	m_hrtf_data_left.impulse_response.reserve(128);
 	m_hrtf_data_right.impulse_response.reserve(128);

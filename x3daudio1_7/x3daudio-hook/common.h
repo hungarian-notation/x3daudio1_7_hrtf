@@ -12,52 +12,32 @@ inline math::vector3 to_vector3(const X3DAUDIO_VECTOR & vector)
 	return math::vector3{ vector.x, vector.y, vector.z };
 }
 
-inline float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, float distance)
+inline float sample_curve(const X3DAUDIO_DISTANCE_CURVE * pCurve, const float distanceScaler, const float distance)
 {
-	const float normalized_distance = distance / pEmitter->CurveDistanceScaler;
+	const float normalized_distance = distance / distanceScaler;
 
-	if (pEmitter->pVolumeCurve == nullptr)
+	if (pCurve == nullptr)
 	{
 		const float clamped_distance = std::max(1.0f, normalized_distance);
-		return 1.0f / (clamped_distance * clamped_distance);
+		return 1.0f / clamped_distance;
 	}
 
-	if (pEmitter->pVolumeCurve->PointCount == 0)
+	if (pCurve->PointCount < 2)
 	{
-		logger::logRelease("Warning: no points in the volume curve");
+		logger::logRelease("Warning: number of points in the volume curve is less than two");
 		return 0;
 	}
 
-	const std::size_t pointCount = pEmitter->pVolumeCurve->PointCount;
-	const auto points = pEmitter->pVolumeCurve->pPoints;
-
-	if (pointCount < 2)
-		throw std::exception();
+	const std::size_t pointCount = pCurve->PointCount;
+	const auto points = pCurve->pPoints;
 
 	if (normalized_distance >= 1.0f)
 		return points[pointCount - 1].DSPSetting;
 
-#if false
-
-	// this part works incorrectly
-	std::size_t furtherPointIndex = pointCount - 1;
-	for (std::size_t i = 1; i < pointCount; i++)
+	const auto greater_point = std::upper_bound(pCurve->pPoints, pCurve->pPoints + pCurve->PointCount, normalized_distance, [=](const auto & dist, const auto & point) { return dist < point.Distance; });
+	if (greater_point != pCurve->pPoints + pCurve->PointCount)
 	{
-		if (points[i].Distance >= normalized_distance)
-		{
-			furtherPointIndex = i;
-			break;
-		}
-	}
-
-	const float t = (normalized_distance - points[furtherPointIndex - 1].Distance) / (points[furtherPointIndex].Distance - points[furtherPointIndex - 1].Distance);
-	return points[furtherPointIndex - 1].DSPSetting  * (1.0f - t) + points[furtherPointIndex].Distance * t;
-#else
-
-	const auto greater_point = std::upper_bound(pEmitter->pVolumeCurve->pPoints, pEmitter->pVolumeCurve->pPoints + pEmitter->pVolumeCurve->PointCount, normalized_distance, [=](const auto & dist, const auto & point) { return dist < point.Distance; });
-	if (greater_point != pEmitter->pVolumeCurve->pPoints + pEmitter->pVolumeCurve->PointCount)
-	{
-		if (greater_point > &pEmitter->pVolumeCurve->pPoints[0])
+		if (greater_point > &pCurve->pPoints[0])
 		{
 			const auto * less_point = greater_point - 1;
 
@@ -73,63 +53,65 @@ inline float sample_volume_curve(const X3DAUDIO_EMITTER* pEmitter, float distanc
 	{
 		return (greater_point - 1)->DSPSetting;
 	}
-#endif
 }
 
-inline void CalculateDelay(const struct X3DAUDIO_LISTENER *pListener, const struct X3DAUDIO_EMITTER *pEmitter, struct X3DAUDIO_DSP_SETTINGS *pDspSettings)
+inline void CalculateDelay(const X3DAUDIO_LISTENER & listener, const X3DAUDIO_EMITTER & emitter, X3DAUDIO_DSP_SETTINGS & dspSettings)
 {
-	//const auto listenerFront = to_vector3(pListener->OrientFront);
-	//const auto listenerTopInput = to_vector3(pListener->OrientTop);
-
-	//const auto listenerRight = math::cross(listenerTopInput, listenerFront);
-	//const auto listenerTop = math::cross(listenerRight, listenerFront);
-
-	//const auto listenerToEmitter = to_vector3(pEmitter->Position) - to_vector3(pListener->Position);
-	//const auto listenerToEmitterDistanceSquared = math::length2(listenerToEmitter);
-	//const auto listenerFrontDotListenerToEmitter = math::dot(listenerFront, listenerToEmitter);
-
-	pDspSettings->pDelayTimes[0] = pDspSettings->pDelayTimes[1] = 0.0f;
+	dspSettings.pDelayTimes[0] = dspSettings.pDelayTimes[1] = 0.0f;
 }
 
 
-inline void CalculateDopplerFactor(float speedOfSound, const struct X3DAUDIO_LISTENER *pListener, const struct X3DAUDIO_EMITTER *pEmitter, struct X3DAUDIO_DSP_SETTINGS *pDspSettings)
+inline void CalculateDopplerFactor(float speedOfSound, const X3DAUDIO_LISTENER & listener, const X3DAUDIO_EMITTER & emitter, X3DAUDIO_DSP_SETTINGS & dspSettings)
 {
-	const auto emitterToListener = to_vector3(pListener->Position) - to_vector3(pEmitter->Position);
+	const auto emitterToListener = to_vector3(listener.Position) - to_vector3(emitter.Position);
 	const auto emitterToListenerDistance = math::length(emitterToListener);
 
 	if (emitterToListenerDistance > 0.00000011920929)
 	{
 		const float maxVelocityComponent = std::nextafter(speedOfSound, 0.0f);
 
-		const float listenerVelocityComponent = math::dot(emitterToListener, to_vector3(pListener->Velocity)) / emitterToListenerDistance;
-		const float emitterVelocityComponent = math::dot(emitterToListener, to_vector3(pEmitter->Velocity)) / emitterToListenerDistance;
-		const float scaledListenerVelocityComponent = std::min(pEmitter->DopplerScaler * listenerVelocityComponent, maxVelocityComponent);
-		const float scaledEmitterVeclocityComponent = std::min(pEmitter->DopplerScaler * emitterVelocityComponent, maxVelocityComponent);
+		const float listenerVelocityComponent = math::dot(emitterToListener, to_vector3(listener.Velocity)) / emitterToListenerDistance;
+		const float emitterVelocityComponent = math::dot(emitterToListener, to_vector3(emitter.Velocity)) / emitterToListenerDistance;
+		const float scaledListenerVelocityComponent = std::min(emitter.DopplerScaler * listenerVelocityComponent, maxVelocityComponent);
+		const float scaledEmitterVeclocityComponent = std::min(emitter.DopplerScaler * emitterVelocityComponent, maxVelocityComponent);
 
-		pDspSettings->ListenerVelocityComponent = listenerVelocityComponent;
-		pDspSettings->EmitterVelocityComponent = emitterVelocityComponent;
-		pDspSettings->DopplerFactor = (speedOfSound - scaledListenerVelocityComponent) / (speedOfSound - scaledEmitterVeclocityComponent);
+		dspSettings.ListenerVelocityComponent = listenerVelocityComponent;
+		dspSettings.EmitterVelocityComponent = emitterVelocityComponent;
+		dspSettings.DopplerFactor = (speedOfSound - scaledListenerVelocityComponent) / (speedOfSound - scaledEmitterVeclocityComponent);
 	}
 	else
 	{
-		pDspSettings->DopplerFactor = 1.0f;
-		pDspSettings->ListenerVelocityComponent = 0.0f;
-		pDspSettings->EmitterVelocityComponent = 0.0f;
+		dspSettings.DopplerFactor = 1.0f;
+		dspSettings.ListenerVelocityComponent = 0.0f;
+		dspSettings.EmitterVelocityComponent = 0.0f;
 	}
+}
+
+
+inline void CalculateReverb(const X3DAUDIO_LISTENER & listener, const X3DAUDIO_EMITTER & emitter, X3DAUDIO_DSP_SETTINGS & dspSettings)
+{
+	const auto emitterToListener = to_vector3(listener.Position) - to_vector3(emitter.Position);
+	const auto emitterToListenerDistance = math::length(emitterToListener);
+	dspSettings.ReverbLevel = sample_curve(emitter.pReverbCurve, emitter.CurveDistanceScaler, emitterToListenerDistance);
 }
 
 
 inline SpatialData CommonX3DAudioCalculate(float speedOfSound, const X3DAUDIO_LISTENER * pListener, const X3DAUDIO_EMITTER * pEmitter, UINT32 Flags, X3DAUDIO_DSP_SETTINGS * pDSPSettings)
 {
+	if (Flags & X3DAUDIO_CALCULATE_REVERB)
+	{
+		CalculateReverb(*pListener, *pEmitter, *pDSPSettings);
+	}
+
 	if (Flags & X3DAUDIO_CALCULATE_DELAY)
 	{
 		_ASSERT(pDSPSettings->pDelayTimes != nullptr);
-		CalculateDelay(pListener, pEmitter, pDSPSettings);
+		CalculateDelay(*pListener, *pEmitter, *pDSPSettings);
 	}
 
 	if (Flags & X3DAUDIO_CALCULATE_DOPPLER)
 	{
-		CalculateDopplerFactor(speedOfSound, pListener, pEmitter, pDSPSettings);
+		CalculateDopplerFactor(speedOfSound, *pListener, *pEmitter, *pDSPSettings);
 	}
 
 	// changing left-hand to ortodox right-hand
@@ -151,7 +133,7 @@ inline SpatialData CommonX3DAudioCalculate(float speedOfSound, const X3DAUDIO_LI
 	const auto distance = math::length(listener_to_emitter);
 
 	spatialData.present = true;
-	spatialData.volume_multiplier = sample_volume_curve(pEmitter, distance);
+	spatialData.volume_multiplier = sample_curve(pEmitter->pVolumeCurve, pEmitter->CurveDistanceScaler, distance);
 	spatialData.azimuth = distance > std::numeric_limits<float>::epsilon() ? std::atan2(relative_position[0], relative_position[2]) : 0.0f;
 	spatialData.elevation = distance > std::numeric_limits<float>::epsilon() ? std::asin(math::normalize(relative_position)[1]) : 0.0f;
 	spatialData.distance = distance;
