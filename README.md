@@ -12,7 +12,19 @@ HRTF, HRIR, Binaural sound, Spatial sound, Ambisonics
 Visit [releases page](https://github.com/kosumosu/x3daudio1_7_hrtf/releases) and grab the latest one. Ensure the version you download matches version of the game (x86 or x64).
 
 ### Installation
-Unpack the contents of the package to the game folder where the main executable is located. Ensure it is the exe of the game itself, not a launcher. If your game uses prior version of x3daudio (earlier than 1.7), you can try to rename the dll to the one the game uses. Run the game. Enjoy!
+#### For Unreal Engine 4 based games
+First, you must locate the _true_ main executable. The one in the root folder is not the one. Inside the root folder there must be another folder that usually has the same name as the game. Within it there must be a folder Binaries\Win64 or Win32. Examples:
+* **Squad**: SteamLibrary\steamapps\common\Squad\Squad\Binaries\Win64
+* **The Vanishing of Ethan Carter Redux**: SteamLibrary\steamapps\common\The Vanishing of Ethan Carter Redux\EthanCarter\Binaries\Win64
+
+Then unpack the archive into this folder, so it's contents lie next to the *true* main executable. Ensure you use the correct (x64 or x86) version of the x3daudio_hrtf.
+#### For UDK based games
+Same as for UE4, but Binaries folder lies right in the root folder. Examples:
+* **The Vanishing of Ethan Carter**: SteamLibrary\steamapps\common\The Vanishing of Ethan Carter\Binaries\Win64
+
+#### For other games
+Unpack the contents of the package to the game folder where the main executable is located. Ensure it is the exe of the game itself, not a launcher. Enjoy!
+
 Note: some anti-cheat software (e.g. BattleEye) won't let you hook anything into the game, so you will have to disable it. That means no HRTF in multiplayer.
 
 #### Notes for developers
