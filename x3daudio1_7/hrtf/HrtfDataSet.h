@@ -8,10 +8,10 @@
 class HrtfDataSet : public IHrtfDataSet
 {
 public:
-	HrtfDataSet(const std::vector<std::wstring> & data_files);
+	explicit HrtfDataSet(const std::vector<std::wstring> & dataFiles);
 
-	bool has_sample_rate(uint32_t sample_rate) const override;
-	const IHrtfData & get_sample_rate_data(uint32_t sampl_rate) const override;
+	bool HasSampleRate(uint32_t sampleRate) const override;
+	const IHrtfData & GetSampleRateData(uint32_t sampleRate) const override;
 private:
-	std::map<uint32_t, HrtfData> m_data; // sample rate - data pairs
+	std::map<uint32_t, HrtfData> _data; // sample rate - data pairs
 };

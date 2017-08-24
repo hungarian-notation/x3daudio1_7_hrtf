@@ -13,16 +13,16 @@ HrtfDataSet::HrtfDataSet(const std::vector<std::wstring> & data_files)
 			throw std::logic_error("Cannot open file");
 
 		HrtfData data(file);
-		m_data.insert({ data.get_sample_rate(), std::move(data) });
+		_data.emplace(data.GetSampleRate(), std::move(data));
 	}
 }
 
-bool HrtfDataSet::has_sample_rate(uint32_t sample_rate) const
+bool HrtfDataSet::HasSampleRate(uint32_t sample_rate) const
 {
-	return m_data.find(sample_rate) != m_data.end();
+	return _data.find(sample_rate) != _data.end();
 }
 
-const IHrtfData & HrtfDataSet::get_sample_rate_data(uint32_t sampl_rate) const
+const IHrtfData & HrtfDataSet::GetSampleRateData(uint32_t sampl_rate) const
 {
-	return m_data.at(sampl_rate);
+	return _data.at(sampl_rate);
 }

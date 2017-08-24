@@ -1,11 +1,11 @@
 #include "stdafx.h"
 #include "XAudio2Proxy.h"
 #include "graph/AudioGraphMapper.h"
+#include "XAPO/HrtfEffect.h"
 
 #include "logger.h"
 #include "util.h"
 #include "application.h"
-
 
 XAudio2Proxy::XAudio2Proxy()
 {
@@ -26,7 +26,7 @@ HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** p
 	auto self = new ATL::CComObjectNoLock<XAudio2Proxy>;
 
 	self->SetVoid(nullptr);
-	self->set_graph_factory([](auto xaudio) { return new AudioGraphMapper(xaudio, &getSpatializedDataExtractor()); });
+	self->set_graph_factory([](auto xaudio) { return new AudioGraphMapper(xaudio, &getSpatializedDataExtractor(), HrtfXapoEffect::CreateInstance); });
 
 	self->InternalFinalConstructAddRef();
 	HRESULT hr = self->_AtlInitialConstruct();

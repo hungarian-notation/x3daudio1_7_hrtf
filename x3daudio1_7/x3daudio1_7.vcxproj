@@ -205,6 +205,7 @@
     <ClInclude Include="xaudio2-hook\graph\EdgeRepository.h" />
     <ClInclude Include="ISpatializationGlue.h" />
     <ClInclude Include="xaudio2-hook\graph\ISpatializedDataExtractor.h" />
+    <ClInclude Include="xaudio2-hook\HrtfXapoParam.h" />
     <ClInclude Include="xaudio2-hook\proxy\AlteredEffectChain.h" />
     <ClInclude Include="xaudio2-hook\ChannelMatrix.h" />
     <ClInclude Include="xaudio2-hook\graph\AudioGraphMapper.h" />

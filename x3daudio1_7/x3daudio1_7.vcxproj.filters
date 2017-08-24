@@ -192,6 +192,9 @@
     <ClInclude Include="x3daudio-hook\common.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="xaudio2-hook\HrtfXapoParam.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
