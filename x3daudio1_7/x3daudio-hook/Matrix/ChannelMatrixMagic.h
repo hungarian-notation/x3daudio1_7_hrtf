@@ -16,12 +16,12 @@ inline void embed_sound_id(float * matrix, UINT32 sourceChannels, UINT32 destCha
 
 inline bool does_matrix_contain_id(const ChannelMatrix & matrix)
 {
-	return matrix.getValue(0, 0) == std::numeric_limits<float>::infinity();
+	return matrix.GetValue(0, 0) == std::numeric_limits<float>::infinity();
 	//return std::isnan(matrix.getValue(0, 0));
 }
 
 inline sound_id extract_sound_id(const ChannelMatrix & matrix)
 {
-	float value = matrix.getValue(1, 0);
+	float value = matrix.GetValue(1, 0);
 	return *reinterpret_cast<sound_id*>(&value);
 }

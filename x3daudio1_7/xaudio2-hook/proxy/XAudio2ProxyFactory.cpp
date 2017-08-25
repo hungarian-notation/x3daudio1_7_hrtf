@@ -9,7 +9,7 @@ STDMETHODIMP XAudio2ProxyFactory::CreateInstance(IUnknown * pUnkOuter, REFIID ri
 		return CLASS_E_NOAGGREGATION;
 
 	ATL::CComPtr<IUnknown> originalObject;
-	HRESULT hr = m_OriginalFactory->CreateInstance(pUnkOuter, riid, (void**)&originalObject);
+	HRESULT hr = m_OriginalFactory->CreateInstance(pUnkOuter, riid, reinterpret_cast<void**>(&originalObject));
 	if (FAILED(hr))
 		return hr;
 
@@ -27,7 +27,7 @@ HRESULT XAudio2ProxyFactory::CreateFactory(IClassFactory * originalFactory, void
 	{
 		ATL::CComObjectNoLock<XAudio2ProxyFactory> * self = new ATL::CComObjectNoLock<XAudio2ProxyFactory>;
 
-		self->SetVoid(NULL);
+		self->SetVoid(nullptr);
 
 		self->InternalFinalConstructAddRef();
 		HRESULT hr = self->_AtlInitialConstruct();

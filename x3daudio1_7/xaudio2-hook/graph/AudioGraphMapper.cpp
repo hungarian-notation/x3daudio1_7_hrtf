@@ -69,8 +69,7 @@ IXAudio2SourceVoice* AudioGraphMapper::CreateSourceVoice(const WAVEFORMATEX* pSo
 		actualVoice->Stop(flags, operationSet);
 	};
 
-	WAVEFORMATEX sourceFormat = *pSourceFormat;
-	proxyVoice->onSubmitSourceBuffer = [actualVoice, sourceFormat](XAudio2SourceVoiceProxy * source, const XAUDIO2_BUFFER * pBuffer, const XAUDIO2_BUFFER_WMA * pBufferWma)
+	proxyVoice->onSubmitSourceBuffer = [actualVoice, sourceFormat = *pSourceFormat](XAudio2SourceVoiceProxy * source, const XAUDIO2_BUFFER * pBuffer, const XAUDIO2_BUFFER_WMA * pBufferWma)
 	{
 		{
 			//WaveFile waveFile(std::wstring(L"wavs\\") + std::to_wstring(sourceFormat.nChannels) + L"_" + get_name(static_cast<XAudio2VoiceProxy*>(source)) + L".wav", sourceFormat.nChannels, sourceFormat.nSamplesPerSec, sourceFormat.wBitsPerSample);
@@ -119,7 +118,7 @@ IXAudio2SubmixVoice* AudioGraphMapper::CreateSubmixVoice(UINT32 InputChannels, U
 
 	IXAudio2SubmixVoice * actualVoiceRawPtr;
 	_xaudio->CreateSubmixVoice(&actualVoiceRawPtr, InputChannels, InputSampleRate, Flags, actualProcessingStage, &_emptySends, pEffectChain);
-	std::shared_ptr<IXAudio2SubmixVoice> actualVoice(actualVoiceRawPtr, [](IXAudio2SubmixVoice * voice) { voice->DestroyVoice(); });
+	const std::shared_ptr<IXAudio2SubmixVoice> actualVoice(actualVoiceRawPtr, [](IXAudio2SubmixVoice * voice) { voice->DestroyVoice(); });
 
 	{
 		std::unique_ptr<Node> node = std::make_unique<Node>();
@@ -146,7 +145,7 @@ IXAudio2MasteringVoice* AudioGraphMapper::CreateMasteringVoice(UINT32 InputChann
 	// For HRTF only two-channel mastering voice makes sense.
 	IXAudio2MasteringVoice * actualVoiceRawPtr;
 	_xaudio->CreateMasteringVoice(&actualVoiceRawPtr, 2, InputSampleRate, Flags, DeviceIndex, pEffectChain);
-	std::shared_ptr<IXAudio2MasteringVoice> actualVoice(actualVoiceRawPtr, [](IXAudio2MasteringVoice * voice) { voice->DestroyVoice(); });
+	const std::shared_ptr<IXAudio2MasteringVoice> actualVoice(actualVoiceRawPtr, [](IXAudio2MasteringVoice * voice) { voice->DestroyVoice(); });
 
 	{
 		std::unique_ptr<Node> node = std::make_unique<Node>();
@@ -329,7 +328,7 @@ void AudioGraphMapper::setupCommonCallbacks(XAudio2VoiceProxy* proxyVoice, const
 
 			ChannelMatrix matrix;
 
-			if (destinationNode->inputChannelsCount == clientMatrix.getDestinationCount())
+			if (destinationNode->inputChannelsCount == clientMatrix.GetDestinationCount())
 			{
 				matrix = std::move(clientMatrix);
 				//matrix = ChannelMatrix(clientMatrix.getSourceCount(), clientMatrix.getDestinationCount());
@@ -345,10 +344,10 @@ void AudioGraphMapper::setupCommonCallbacks(XAudio2VoiceProxy* proxyVoice, const
 			}
 
 			std::vector<float> values;
-			values.resize(matrix.getSourceCount() * matrix.getDestinationCount());
-			from_ChannelMatrix(matrix, matrix.getSourceCount(), matrix.getDestinationCount(), &*values.begin());
+			values.resize(matrix.GetSourceCount() * matrix.GetDestinationCount());
+			from_ChannelMatrix(matrix, matrix.GetSourceCount(), matrix.GetDestinationCount(), &*values.begin());
 
-			node->tailVoices.at(destinationNode).voice->SetOutputMatrix(destinationNode->mainVoice.get(), matrix.getSourceCount(), matrix.getDestinationCount(), &*values.begin());
+			node->tailVoices.at(destinationNode).voice->SetOutputMatrix(destinationNode->mainVoice.get(), matrix.GetSourceCount(), matrix.GetDestinationCount(), &*values.begin());
 		}
 	};
 

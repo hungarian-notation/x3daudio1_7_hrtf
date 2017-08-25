@@ -25,13 +25,10 @@ public:
 	BEGIN_COM_MAP(XAudio2Proxy)
 		COM_INTERFACE_ENTRY(IXAudio2)
 		COM_INTERFACE_ENTRY(IUnknown)
-		END_COM_MAP()
+	END_COM_MAP()
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-public:
-	HRESULT FinalConstruct();
-	void FinalRelease();
 public:
 	HRESULT static CreateInstance(IUnknown * original, REFIID riid, void ** ppvObject);
 	HRESULT static CreateActualDebugInstance(IUnknown * original, REFIID riid, void ** ppvObject);

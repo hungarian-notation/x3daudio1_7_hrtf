@@ -6,11 +6,11 @@
 void SequencedX3DAudioProxy::CorrectVolume(SpatialData & spatialDataCopy, const ChannelMatrix & clientMatrix) const
 {
 	float volumeSum = 0.0f;
-	for (std::size_t destIndex = 0; destIndex < clientMatrix.getDestinationCount(); destIndex++)
+	for (unsigned int destIndex = 0; destIndex < clientMatrix.GetDestinationCount(); destIndex++)
 	{
-		for (std::size_t srcIndex = 0; srcIndex < clientMatrix.getSourceCount(); srcIndex++)
+		for (unsigned int srcIndex = 0; srcIndex < clientMatrix.GetSourceCount(); srcIndex++)
 		{
-			volumeSum += clientMatrix.getValue(srcIndex, destIndex);
+			volumeSum += clientMatrix.GetValue(srcIndex, destIndex);
 		}
 	}
 	spatialDataCopy.volume_multiplier = volumeSum * 0.5f; // because we distribute power over two channels. But I'm not sure this is the right place to place this distribution.

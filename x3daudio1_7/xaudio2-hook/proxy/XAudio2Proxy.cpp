@@ -12,15 +12,6 @@ XAudio2Proxy::XAudio2Proxy()
 	logger::logDebug("Constructing XAudio2Proxy");
 }
 
-HRESULT XAudio2Proxy::FinalConstruct()
-{
-	return S_OK;
-}
-
-void XAudio2Proxy::FinalRelease()
-{
-}
-
 HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** ppvObject)
 {
 	auto self = new ATL::CComObjectNoLock<XAudio2Proxy>;
