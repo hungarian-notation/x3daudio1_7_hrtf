@@ -1,9 +1,9 @@
 ﻿#include "stdafx.h"
-#include "HrtfDataSet.h"
+#include "MhrHrtfDataSet.h"
 #include <fstream>
 #include <algorithm>
 
-HrtfDataSet::HrtfDataSet(const std::vector<std::wstring> & data_files)
+MhrHrtfDataSet::MhrHrtfDataSet(const std::vector<std::wstring> & data_files)
 {
 	for (auto& data_file_name : data_files)
 	{
@@ -12,17 +12,17 @@ HrtfDataSet::HrtfDataSet(const std::vector<std::wstring> & data_files)
 		if (!file.is_open())
 			throw std::logic_error("Cannot open file");
 
-		HrtfData data(file);
+		MhrHrtfData data(file);
 		_data.emplace(data.GetSampleRate(), std::move(data));
 	}
 }
 
-bool HrtfDataSet::HasSampleRate(uint32_t sample_rate) const
+bool MhrHrtfDataSet::HasSampleRate(uint32_t sample_rate) const
 {
 	return _data.find(sample_rate) != _data.end();
 }
 
-const IHrtfData & HrtfDataSet::GetSampleRateData(uint32_t sampl_rate) const
+const IHrtfData & MhrHrtfDataSet::GetSampleRateData(uint32_t sampl_rate) const
 {
 	return _data.at(sampl_rate);
 }

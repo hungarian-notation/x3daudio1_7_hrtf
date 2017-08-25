@@ -1,6 +1,6 @@
 #pragma once
 
-#include "hrtf/HrtfDataSet.h"
+#include "hrtf/MhrData/MhrHrtfDataSet.h"
 
 #include "math/math_types.h"
 #include "HrtfXapoParam.h"

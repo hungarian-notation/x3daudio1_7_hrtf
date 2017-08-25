@@ -52,7 +52,7 @@ HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** p
 	//config.TraceMask = config.TraceMask | XAUDIO2_LOG_FUNC_CALLS | XAUDIO2_LOG_DETAIL;
 	config.BreakMask = XAUDIO2_LOG_ERRORS;
 
-	self->m_original->SetDebugConfiguration(&config);
+	self->_original->SetDebugConfiguration(&config);
 #endif
 
 	return hr;

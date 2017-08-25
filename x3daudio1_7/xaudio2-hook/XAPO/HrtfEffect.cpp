@@ -60,7 +60,7 @@ HRESULT HrtfXapoEffect::LockForProcess(UINT32 InputLockedParameterCount, const X
 		if (_hrtfDataSet->HasSampleRate(_inputFormat.nSamplesPerSec))
 		{
 			_hrtfData = &_hrtfDataSet->GetSampleRateData(_inputFormat.nSamplesPerSec);
-			_historySize = _hrtfData->GetLongestDelay() + _hrtfData->GetRespooneLength();
+			_historySize = _hrtfData->GetLongestDelay() + _hrtfData->GetResponseLength();
 			_buffersPerHistory = _historySize / (pInputLockedParameters[0].MaxFrameCount + _historySize - 1);
 			_invalidBuffersCount = _buffersPerHistory;
 
@@ -147,7 +147,7 @@ void HrtfXapoEffect::Convolve(const UINT32 frameIndex, DirectionData& hrtfData, 
 {
 	const int startSignalIndex = _historySize + frameIndex - static_cast<int>(hrtfData.delay);
 
-	_ASSERT(static_cast<int>(start_signal_index) - static_cast<int>(hrtf_data.impulse_response.size()) >= 0);
+	_ASSERT(static_cast<int>(startSignalIndex) - static_cast<int>(hrtfData.impulse_response.size()) >= 0);
 
 #if 1
 

@@ -42,14 +42,14 @@ public:
 
 	float GetValue(unsigned int source, unsigned int destination) const
 	{
-		_ASSERT(source < m_sourceCount || destination < m_destinationCount);
+		_ASSERT(source < _sourceCount || destination < _destinationCount);
 
 		return _values[destination * _sourceCount + source];
 	}
 
 	void SetValue(unsigned int source, unsigned int destination, float value)
 	{
-		_ASSERT(source < m_sourceCount || destination < m_destinationCount);
+		_ASSERT(source < _sourceCount || destination < _destinationCount);
 
 		_values[destination * _sourceCount + source] = value;
 	}

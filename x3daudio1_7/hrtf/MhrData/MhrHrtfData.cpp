@@ -1,5 +1,5 @@
 #include "stdafx.h"
-#include "HrtfData.h"
+#include "MhrHrtfData.h"
 #include "Endianness.h"
 #include <algorithm>
 #include <array>
@@ -27,7 +27,7 @@ constexpr float get_normalization_factor()
 	return 1.0f / std::max(-float(std::numeric_limits<T>::min()), float(std::numeric_limits<T>::max()));
 }
 
-HrtfData::HrtfData(std::istream & stream)
+MhrHrtfData::MhrHrtfData(std::istream & stream)
 {
 	static_assert(sizeof(char) == 1, "sizeof(char) is expected to be 1 byte");
 	constexpr std::array<char, 8> requiredMagic { 'M', 'i', 'n', 'P', 'H', 'R', '0', '1' };
@@ -90,12 +90,12 @@ HrtfData::HrtfData(std::istream & stream)
 	_longest_delay = longestDelay;
 }
 
-void HrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_t distance, DirectionData& refData) const
+void MhrHrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_t distance, DirectionData& refData) const
 {
-	_ASSERT(elevation >= -angle_t(pi * 0.5));
-	_ASSERT(elevation <= angle_t(pi * 0.5));
-	_ASSERT(azimuth >= -angle_t(2.0 * pi));
-	_ASSERT(azimuth <= angle_t(2.0 * pi));
+	_ASSERT(elevation >= -angle_t(Pi * 0.5));
+	_ASSERT(elevation <= angle_t(Pi * 0.5));
+	_ASSERT(azimuth >= -angle_t(2.0 * Pi));
+	_ASSERT(azimuth <= angle_t(2.0 * Pi));
 
 	const float azimuthMod = std::fmod(azimuth + angle_t(Pi * 2.0), angle_t(Pi * 2.0));
 
@@ -138,23 +138,23 @@ void HrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_t d
 	}
 }
 
-void HrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_t distance, DirectionData& refDataLeft, DirectionData& refDataRight) const
+void MhrHrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_t distance, DirectionData& refDataLeft, DirectionData& refDataRight) const
 {
-	_ASSERT(elevation >= -angle_t(pi * 0.5));
-	_ASSERT(elevation <= angle_t(pi * 0.5));
-	_ASSERT(azimuth >= -angle_t(2.0 * pi));
-	_ASSERT(azimuth <= angle_t(2.0 * pi));
+	_ASSERT(elevation >= -angle_t(Pi * 0.5));
+	_ASSERT(elevation <= angle_t(Pi * 0.5));
+	_ASSERT(azimuth >= -angle_t(2.0 * Pi));
+	_ASSERT(azimuth <= angle_t(2.0 * Pi));
 
 	GetDirectionData(elevation, azimuth, distance, refDataLeft);
 	GetDirectionData(elevation, -azimuth, distance, refDataRight);
 }
 
-void HrtfData::SampleDirection(angle_t elevation, angle_t azimuth, distance_t distance, uint32_t sample, float& value, float& delay) const
+void MhrHrtfData::SampleDirection(angle_t elevation, angle_t azimuth, distance_t distance, uint32_t sample, float& value, float& delay) const
 {
-	_ASSERT(elevation >= -angle_t(pi * 0.5));
-	_ASSERT(elevation <= angle_t(pi * 0.5));
-	_ASSERT(azimuth >= -angle_t(2.0 * pi));
-	_ASSERT(azimuth <= angle_t(2.0 * pi));
+	_ASSERT(elevation >= -angle_t(Pi * 0.5));
+	_ASSERT(elevation <= angle_t(Pi * 0.5));
+	_ASSERT(azimuth >= -angle_t(2.0 * Pi));
+	_ASSERT(azimuth <= angle_t(2.0 * Pi));
 
 	const float azimuthMod = std::fmod(azimuth + angle_t(Pi * 2.0), angle_t(Pi * 2.0));
 
@@ -191,12 +191,12 @@ void HrtfData::SampleDirection(angle_t elevation, angle_t azimuth, distance_t di
 		+ _elevations[elevationIndex1].azimuths[azimuthIndex11].impulse_response[sample] * blendFactor11;
 }
 
-void HrtfData::SampleDirection(angle_t elevation, angle_t azimuth, distance_t distance, uint32_t sample, float& valueLeft, float& delayLeft, float& valueRight, float& delayRight) const
+void MhrHrtfData::SampleDirection(angle_t elevation, angle_t azimuth, distance_t distance, uint32_t sample, float& valueLeft, float& delayLeft, float& valueRight, float& delayRight) const
 {
-	_ASSERT(elevation >= -angle_t(pi * 0.5));
-	_ASSERT(elevation <= angle_t(pi * 0.5));
-	_ASSERT(azimuth >= -angle_t(2.0 * pi));
-	_ASSERT(azimuth <= angle_t(2.0 * pi));
+	_ASSERT(elevation >= -angle_t(Pi * 0.5));
+	_ASSERT(elevation <= angle_t(Pi * 0.5));
+	_ASSERT(azimuth >= -angle_t(2.0 * Pi));
+	_ASSERT(azimuth <= angle_t(2.0 * Pi));
 
 	SampleDirection(elevation, azimuth, distance, sample, valueLeft, delayLeft);
 	SampleDirection(elevation, -azimuth, distance, sample, valueRight, delayRight);

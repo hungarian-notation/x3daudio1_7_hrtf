@@ -8,7 +8,7 @@
 #include "x3daudio-hook/Matrix/Sound3DRegistry.h"
 #include "x3daudio-hook/Sequenced/SequencedX3DAudioProxy.h"
 #include "proxy/XAudio2Proxy.h"
-#include "hrtf/HrtfDataSet.h"
+#include "hrtf/MhrData/MhrHrtfDataSet.h"
 
 #define GLUE_SEQUENCED
 //#define CREATE_AUTHENTIC_DEBUG_XAUDIO
@@ -61,6 +61,6 @@ HRESULT create_xaudio_proxy(ATL::CComPtr<IUnknown> original, const IID& riid, vo
 
 	FindClose(hFind);
 
-	return XAudio2Proxy::CreateInstance(original.Detach(), riid, ppv, std::make_shared<HrtfDataSet>(dataFiles), get_spatialized_data_extractor());
+	return XAudio2Proxy::CreateInstance(original.Detach(), riid, ppv, std::make_shared<MhrHrtfDataSet>(dataFiles), get_spatialized_data_extractor());
 #endif
 }

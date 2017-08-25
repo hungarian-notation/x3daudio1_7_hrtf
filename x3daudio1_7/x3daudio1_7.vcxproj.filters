@@ -120,15 +120,6 @@
     <ClInclude Include="math\RandomEngine.h">
       <Filter>Header Files</Filter>
     </ClInclude>
-    <ClInclude Include="hrtf\Endianness.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hrtf\HrtfData.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
-    <ClInclude Include="hrtf\HrtfDataSet.h">
-      <Filter>Header Files</Filter>
-    </ClInclude>
     <ClInclude Include="hrtf\IHrtfDataSet.h">
       <Filter>Header Files</Filter>
     </ClInclude>
@@ -195,6 +186,15 @@
     <ClInclude Include="xaudio2-hook\HrtfXapoParam.h">
       <Filter>Header Files</Filter>
     </ClInclude>
+    <ClInclude Include="hrtf\MhrData\Endianness.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hrtf\MhrData\MhrHrtfDataSet.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
+    <ClInclude Include="hrtf\MhrData\MhrHrtfData.h">
+      <Filter>Header Files</Filter>
+    </ClInclude>
   </ItemGroup>
   <ItemGroup>
     <ClCompile Include="stdafx.cpp">
@@ -251,12 +251,6 @@
     <ClCompile Include="math\RandomEngine.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
-    <ClCompile Include="hrtf\HrtfData.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
-    <ClCompile Include="hrtf\HrtfDataSet.cpp">
-      <Filter>Source Files</Filter>
-    </ClCompile>
     <ClCompile Include="xaudio2-hook\proxy\XAudio2VoiceProxy.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
@@ -276,6 +270,12 @@
       <Filter>Source Files</Filter>
     </ClCompile>
     <ClCompile Include="application.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hrtf\MhrData\MhrHrtfDataSet.cpp">
+      <Filter>Source Files</Filter>
+    </ClCompile>
+    <ClCompile Include="hrtf\MhrData\MhrHrtfData.cpp">
       <Filter>Source Files</Filter>
     </ClCompile>
   </ItemGroup>

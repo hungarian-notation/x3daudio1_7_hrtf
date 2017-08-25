@@ -167,9 +167,9 @@
     <ClInclude Include="disasm\disasm_x86.h" />
     <ClInclude Include="disasm\disasm_x86_tables.h" />
     <ClInclude Include="disasm\misc.h" />
-    <ClInclude Include="hrtf\Endianness.h" />
-    <ClInclude Include="hrtf\HrtfData.h" />
-    <ClInclude Include="hrtf\HrtfDataSet.h" />
+    <ClInclude Include="hrtf\MhrData\Endianness.h" />
+    <ClInclude Include="hrtf\MhrData\MhrHrtfData.h" />
+    <ClInclude Include="hrtf\MhrData\MhrHrtfDataSet.h" />
     <ClInclude Include="hrtf\HrtfTypes.h" />
     <ClInclude Include="hrtf\IHrtfData.h" />
     <ClInclude Include="hrtf\IHrtfDataSet.h" />
@@ -262,8 +262,8 @@
       <PrecompiledHeader Condition="'$(Configuration)|$(Platform)'=='Release|x64'">
       </PrecompiledHeader>
     </ClCompile>
-    <ClCompile Include="hrtf\HrtfData.cpp" />
-    <ClCompile Include="hrtf\HrtfDataSet.cpp" />
+    <ClCompile Include="hrtf\MhrData\MhrHrtfData.cpp" />
+    <ClCompile Include="hrtf\MhrData\MhrHrtfDataSet.cpp" />
     <ClCompile Include="x3daudio-hook\Matrix\Sound3DRegistry.cpp" />
     <ClCompile Include="logger.cpp" />
     <ClCompile Include="math\RandomEngine.cpp" />
