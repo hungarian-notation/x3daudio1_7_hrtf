@@ -4,7 +4,6 @@
 
 class ISpatializedDataExtractor;
 class IX3DAudioProxy;
-class IXAudio2;
 
 ISpatializedDataExtractor & get_spatialized_data_extractor();
 IX3DAudioProxy & get_x3daudio_proxy();
