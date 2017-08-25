@@ -37,7 +37,7 @@ namespace Hook
 	extern "C" __declspec(dllexport) void STDAPIVCALLTYPE X3DAudioInitialize(UINT32 SpeakerChannelMask, FLOAT32 SpeedOfSound, X3DAUDIO_CUSTOM_HANDLE Instance)
 	{
 		logger::logDebug("X3DAudioInitialize");
-		Instance->proxy = &getX3DAudioProxy();
+		Instance->proxy = &get_x3daudio_proxy();
 		Instance->proxy->X3DAudioInitialize(SpeakerChannelMask, SpeedOfSound);
 	}
 

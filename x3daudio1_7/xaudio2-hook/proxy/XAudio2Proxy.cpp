@@ -40,7 +40,7 @@ HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** p
 		return instance;
 	};
 
-	self->set_graph_factory([hrtfEffectFactory = std::move(hrtfEffectFactory)](auto xaudio) { return new AudioGraphMapper(xaudio, &getSpatializedDataExtractor(), hrtfEffectFactory); });
+	self->set_graph_factory([hrtfEffectFactory = std::move(hrtfEffectFactory)](auto xaudio) { return new AudioGraphMapper(xaudio, &get_spatialized_data_extractor(), hrtfEffectFactory); });
 
 	self->InternalFinalConstructAddRef();
 	HRESULT hr = self->_AtlInitialConstruct();

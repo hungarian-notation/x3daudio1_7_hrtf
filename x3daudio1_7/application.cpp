@@ -7,8 +7,10 @@
 #include "x3daudio-hook/Matrix/MatrixEncodingX3DAudioProxy.h"
 #include "x3daudio-hook/Matrix/Sound3DRegistry.h"
 #include "x3daudio-hook/Sequenced/SequencedX3DAudioProxy.h"
+#include "proxy/XAudio2Proxy.h"
 
 #define GLUE_SEQUENCED
+//#define CREATE_AUTHENTIC_DEBUG_XAUDIO
 
 std::unique_ptr<ISpatializationGlue> s_glue;
 
@@ -25,14 +27,23 @@ void EnsureInitialized()
 	}
 }
 
-ISpatializedDataExtractor & getSpatializedDataExtractor()
+ISpatializedDataExtractor & get_spatialized_data_extractor()
 {
 	EnsureInitialized();
 	return *s_glue;
 }
 
-IX3DAudioProxy & getX3DAudioProxy()
+IX3DAudioProxy & get_x3daudio_proxy()
 {
 	EnsureInitialized();
 	return *s_glue;
+}
+
+HRESULT create_xaudio_proxy(ATL::CComPtr<IUnknown> original, const IID& riid, void** ppv)
+{
+#if defined(CREATE_AUTHENTIC_DEBUG_XAUDIO)
+	return XAudio2Proxy::CreateActualDebugInstance(originalObject.Detach(), riid, ppv);
+#else
+	return XAudio2Proxy::CreateInstance(original.Detach(), riid, ppv);
+#endif
 }
