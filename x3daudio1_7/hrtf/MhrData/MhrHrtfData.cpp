@@ -85,9 +85,9 @@ MhrHrtfData::MhrHrtfData(std::istream & stream)
 	}
 
 	_elevations = std::move(elevations);
-	_response_length = impulseResponseLength;
-	_sample_rate = sampleRate;
-	_longest_delay = longestDelay;
+	_responseLength = impulseResponseLength;
+	_sampleRate = sampleRate;
+	_longestDelay = longestDelay;
 }
 
 void MhrHrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_t distance, DirectionData& refData) const
@@ -125,10 +125,10 @@ void MhrHrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_
 		+ _elevations[elevationIndex1].azimuths[azimuthIndex10].delay * blendFactor10
 		+ _elevations[elevationIndex1].azimuths[azimuthIndex11].delay * blendFactor11;
 
-	if (refData.impulse_response.size() < _response_length)
-		refData.impulse_response.resize(_response_length);
+	if (refData.impulse_response.size() < _responseLength)
+		refData.impulse_response.resize(_responseLength);
 
-	for (size_t i = 0; i < _response_length; i++)
+	for (size_t i = 0; i < _responseLength; i++)
 	{
 		refData.impulse_response[i] =
 			_elevations[elevationIndex0].azimuths[azimuthIndex00].impulse_response[i] * blendFactor00
@@ -147,57 +147,4 @@ void MhrHrtfData::GetDirectionData(angle_t elevation, angle_t azimuth, distance_
 
 	GetDirectionData(elevation, azimuth, distance, refDataLeft);
 	GetDirectionData(elevation, -azimuth, distance, refDataRight);
-}
-
-void MhrHrtfData::SampleDirection(angle_t elevation, angle_t azimuth, distance_t distance, uint32_t sample, float& value, float& delay) const
-{
-	_ASSERT(elevation >= -angle_t(Pi * 0.5));
-	_ASSERT(elevation <= angle_t(Pi * 0.5));
-	_ASSERT(azimuth >= -angle_t(2.0 * Pi));
-	_ASSERT(azimuth <= angle_t(2.0 * Pi));
-
-	const float azimuthMod = std::fmod(azimuth + angle_t(Pi * 2.0), angle_t(Pi * 2.0));
-
-	const angle_t elevationScaled = (elevation + angle_t(Pi * 0.5)) * (_elevations.size() - 1) / angle_t(Pi);
-	const size_t elevationIndex0 = static_cast<size_t>(elevationScaled);
-	const size_t elevationIndex1 = std::min(elevationIndex0 + 1, _elevations.size() - 1);
-	const float elevationFractionalPart = elevationScaled - std::floor(elevationScaled);
-
-	const angle_t azimuthScaled0 = azimuthMod * _elevations[elevationIndex0].azimuths.size() / angle_t(Pi * 2.0);
-	const size_t azimuthIndex00 = static_cast<size_t>(azimuthScaled0) % _elevations[elevationIndex0].azimuths.size();
-	const size_t azimuthIndex01 = static_cast<size_t>(azimuthScaled0 + 1) % _elevations[elevationIndex0].azimuths.size();
-	const float azimuthFractionalPart0 = azimuthScaled0 - std::floor(azimuthScaled0);
-
-	const angle_t azimuthScaled1 = azimuthMod * _elevations[elevationIndex1].azimuths.size() / angle_t(Pi * 2.0);
-	const size_t azimuthIndex10 = static_cast<size_t>(azimuthScaled1) % _elevations[elevationIndex1].azimuths.size();
-	const size_t azimuthIndex11 = static_cast<size_t>(azimuthScaled1 + 1) % _elevations[elevationIndex1].azimuths.size();
-	const float azimuthFractionalPart1 = azimuthScaled1 - std::floor(azimuthScaled1);
-
-	const float blendFactor00 = (1.0f - elevationFractionalPart) * (1.0f - azimuthFractionalPart0);
-	const float blendFactor01 = (1.0f - elevationFractionalPart) * azimuthFractionalPart0;
-	const float blendFactor10 = elevationFractionalPart * (1.0f - azimuthFractionalPart1);
-	const float blendFactor11 = elevationFractionalPart * azimuthFractionalPart1;
-
-	delay =
-		_elevations[elevationIndex0].azimuths[azimuthIndex00].delay * blendFactor00
-		+ _elevations[elevationIndex0].azimuths[azimuthIndex01].delay * blendFactor01
-		+ _elevations[elevationIndex1].azimuths[azimuthIndex10].delay * blendFactor10
-		+ _elevations[elevationIndex1].azimuths[azimuthIndex11].delay * blendFactor11;
-
-	value =
-		_elevations[elevationIndex0].azimuths[azimuthIndex00].impulse_response[sample] * blendFactor00
-		+ _elevations[elevationIndex0].azimuths[azimuthIndex01].impulse_response[sample] * blendFactor01
-		+ _elevations[elevationIndex1].azimuths[azimuthIndex10].impulse_response[sample] * blendFactor10
-		+ _elevations[elevationIndex1].azimuths[azimuthIndex11].impulse_response[sample] * blendFactor11;
-}
-
-void MhrHrtfData::SampleDirection(angle_t elevation, angle_t azimuth, distance_t distance, uint32_t sample, float& valueLeft, float& delayLeft, float& valueRight, float& delayRight) const
-{
-	_ASSERT(elevation >= -angle_t(Pi * 0.5));
-	_ASSERT(elevation <= angle_t(Pi * 0.5));
-	_ASSERT(azimuth >= -angle_t(2.0 * Pi));
-	_ASSERT(azimuth <= angle_t(2.0 * Pi));
-
-	SampleDirection(elevation, azimuth, distance, sample, valueLeft, delayLeft);
-	SampleDirection(elevation, -azimuth, distance, sample, valueRight, delayRight);
 }
