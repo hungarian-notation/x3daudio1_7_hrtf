@@ -20,29 +20,6 @@ XAPO_REGISTRATION_PROPERTIES HrtfXapoEffect::_regProps = {
 	| XAPO_FLAG_INPLACE_SUPPORTED,
 	1, 1, 1, 1 };
 
-HrtfXapoEffect* HrtfXapoEffect::CreateInstance()
-{
-	std::vector<std::wstring> dataFiles;
-
-	WIN32_FIND_DATAW fileData;
-	const HANDLE hFind = FindFirstFileW(L"hrtf\\*.mhr", &fileData);
-
-	if (hFind == INVALID_HANDLE_VALUE)
-		throw std::logic_error("No mhr files found in hrtf directory.");
-
-	do
-	{
-		dataFiles.push_back(std::wstring(L"hrtf\\") + fileData.cFileName);
-	} while (FindNextFileW(hFind, &fileData));
-
-	FindClose(hFind);
-
-	static std::shared_ptr<HrtfDataSet> hrtfData = std::make_shared<HrtfDataSet>(dataFiles);
-	auto instance = new HrtfXapoEffect(hrtfData);
-	instance->Initialize(nullptr, 0);
-	return instance;
-}
-
 HrtfXapoEffect::HrtfXapoEffect(const std::shared_ptr<IHrtfDataSet> & hrtfData) :
 	CXAPOParametersBase(&_regProps, reinterpret_cast<BYTE*>(_params), sizeof(HrtfXapoParam), FALSE)
 	, _timePerFrame(0)

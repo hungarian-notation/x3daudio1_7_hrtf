@@ -26,7 +26,30 @@ HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** p
 	auto self = new ATL::CComObjectNoLock<XAudio2Proxy>;
 
 	self->SetVoid(nullptr);
-	self->set_graph_factory([](auto xaudio) { return new AudioGraphMapper(xaudio, &getSpatializedDataExtractor(), HrtfXapoEffect::CreateInstance); });
+
+	std::vector<std::wstring> dataFiles;
+
+	WIN32_FIND_DATAW fileData;
+	const HANDLE hFind = FindFirstFileW(L"hrtf\\*.mhr", &fileData);
+
+	if (hFind == INVALID_HANDLE_VALUE)
+		throw std::logic_error("No mhr files found in hrtf directory.");
+
+	do
+	{
+		dataFiles.push_back(std::wstring(L"hrtf\\") + fileData.cFileName);
+	} while (FindNextFileW(hFind, &fileData));
+
+	FindClose(hFind);
+	
+	auto hrtfEffectFactory = [hrtfData = std::make_shared<HrtfDataSet>(dataFiles)]()
+	{
+		auto instance = new HrtfXapoEffect(hrtfData);
+		instance->Initialize(nullptr, 0);
+		return instance;
+	};
+
+	self->set_graph_factory([hrtfEffectFactory = std::move(hrtfEffectFactory)](auto xaudio) { return new AudioGraphMapper(xaudio, &getSpatializedDataExtractor(), hrtfEffectFactory); });
 
 	self->InternalFinalConstructAddRef();
 	HRESULT hr = self->_AtlInitialConstruct();
