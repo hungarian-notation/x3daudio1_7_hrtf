@@ -22,7 +22,7 @@
 const XAUDIO2_VOICE_SENDS AudioGraphMapper::_emptySends = empty_sends();
 
 
-AudioGraphMapper::AudioGraphMapper(IXAudio2 * xaudio, ISpatializedDataExtractor * spatializedDataExtractor, hrtf_effect_factory hrtfEffectFactory)
+AudioGraphMapper::AudioGraphMapper(IXAudio2 & xaudio, ISpatializedDataExtractor & spatializedDataExtractor, hrtf_effect_factory hrtfEffectFactory)
 	: _xaudio(xaudio)
 	, _spatializedDataExtractor(spatializedDataExtractor)
 	, _hrtfEffectFactory(std::move(hrtfEffectFactory))
@@ -40,7 +40,7 @@ IXAudio2SourceVoice* AudioGraphMapper::CreateSourceVoice(const WAVEFORMATEX* pSo
 	auto proxyVoice = new XAudio2SourceVoiceProxy(pSourceFormat->nChannels, pSourceFormat->nSamplesPerSec, Flags, MaxFrequencyRatio, pCallback, -1, from_XAUDIO2_VOICE_SENDS(pSendList), from_XAUDIO2_EFFECT_CHAIN(pEffectChain));
 
 	IXAudio2SourceVoice * actualVoiceRawPtr;
-	_xaudio->CreateSourceVoice(&actualVoiceRawPtr, pSourceFormat, Flags, MaxFrequencyRatio, pCallback, &_emptySends, pEffectChain);
+	_xaudio.CreateSourceVoice(&actualVoiceRawPtr, pSourceFormat, Flags, MaxFrequencyRatio, pCallback, &_emptySends, pEffectChain);
 	std::shared_ptr<IXAudio2SourceVoice> actualVoice(actualVoiceRawPtr, [](IXAudio2SourceVoice * voice) { voice->DestroyVoice(); });
 
 	{
@@ -117,7 +117,7 @@ IXAudio2SubmixVoice* AudioGraphMapper::CreateSubmixVoice(UINT32 InputChannels, U
 	auto proxyVoice = new XAudio2SubmixVoiceProxy(InputChannels, InputSampleRate, Flags, ProcessingStage, from_XAUDIO2_VOICE_SENDS(pSendList), from_XAUDIO2_EFFECT_CHAIN(pEffectChain));
 
 	IXAudio2SubmixVoice * actualVoiceRawPtr;
-	_xaudio->CreateSubmixVoice(&actualVoiceRawPtr, InputChannels, InputSampleRate, Flags, actualProcessingStage, &_emptySends, pEffectChain);
+	_xaudio.CreateSubmixVoice(&actualVoiceRawPtr, InputChannels, InputSampleRate, Flags, actualProcessingStage, &_emptySends, pEffectChain);
 	const std::shared_ptr<IXAudio2SubmixVoice> actualVoice(actualVoiceRawPtr, [](IXAudio2SubmixVoice * voice) { voice->DestroyVoice(); });
 
 	{
@@ -144,7 +144,7 @@ IXAudio2MasteringVoice* AudioGraphMapper::CreateMasteringVoice(UINT32 InputChann
 
 	// For HRTF only two-channel mastering voice makes sense.
 	IXAudio2MasteringVoice * actualVoiceRawPtr;
-	_xaudio->CreateMasteringVoice(&actualVoiceRawPtr, 2, InputSampleRate, Flags, DeviceIndex, pEffectChain);
+	_xaudio.CreateMasteringVoice(&actualVoiceRawPtr, 2, InputSampleRate, Flags, DeviceIndex, pEffectChain);
 	const std::shared_ptr<IXAudio2MasteringVoice> actualVoice(actualVoiceRawPtr, [](IXAudio2MasteringVoice * voice) { voice->DestroyVoice(); });
 
 	{
@@ -272,7 +272,7 @@ void AudioGraphMapper::setupCommonCallbacks(XAudio2VoiceProxy* proxyVoice, const
 
 		TailVoiceDescriptor & tailVoiceDescriptor = node->tailVoices.at(destinationNode);
 
-		const auto spatializedData = _spatializedDataExtractor->ExtractSpatialData(source, pDestinationProxy);
+		const auto spatializedData = _spatializedDataExtractor.ExtractSpatialData(source, pDestinationProxy);
 
 		if (spatializedData.present)
 		{
@@ -439,14 +439,14 @@ std::shared_ptr<IXAudio2SubmixVoice> AudioGraphMapper::createTailVoice(Node * se
 	IXAudio2SubmixVoice * tailVoice;
 	if (effectChain.size() == 0)
 	{
-		_xaudio->CreateSubmixVoice(&tailVoice, senderNode->mainOutputChannelsCount, senderNode->inputSampleRate, 0, senderNode->actualProcessingStage + 1, &sends, nullptr);
+		_xaudio.CreateSubmixVoice(&tailVoice, senderNode->mainOutputChannelsCount, senderNode->inputSampleRate, 0, senderNode->actualProcessingStage + 1, &sends, nullptr);
 	}
 	else
 	{
 		XAUDIO2_EFFECT_CHAIN chainStruct;
 		chainStruct.EffectCount = static_cast<UINT32>(effectChain.size());
 		chainStruct.pEffectDescriptors = const_cast<XAUDIO2_EFFECT_DESCRIPTOR*>(&*effectChain.begin());
-		_xaudio->CreateSubmixVoice(&tailVoice, senderNode->mainOutputChannelsCount, senderNode->inputSampleRate, 0, senderNode->actualProcessingStage + 1, &sends, &chainStruct);
+		_xaudio.CreateSubmixVoice(&tailVoice, senderNode->mainOutputChannelsCount, senderNode->inputSampleRate, 0, senderNode->actualProcessingStage + 1, &sends, &chainStruct);
 	}
 
 	return std::shared_ptr<IXAudio2SubmixVoice>(tailVoice, [](IXAudio2Voice * pVoice) { pVoice->DestroyVoice(); });

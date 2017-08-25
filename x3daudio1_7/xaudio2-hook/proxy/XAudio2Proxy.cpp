@@ -5,42 +5,26 @@
 
 #include "logger.h"
 #include "util.h"
-#include "application.h"
 
 XAudio2Proxy::XAudio2Proxy()
 {
 	logger::logDebug("Constructing XAudio2Proxy");
 }
 
-HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** ppvObject)
+HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** ppvObject, std::shared_ptr<IHrtfDataSet> hrtfData, ISpatializedDataExtractor & spatializedDataExtractor)
 {
 	auto self = new ATL::CComObjectNoLock<XAudio2Proxy>;
 
 	self->SetVoid(nullptr);
 
-	std::vector<std::wstring> dataFiles;
-
-	WIN32_FIND_DATAW fileData;
-	const HANDLE hFind = FindFirstFileW(L"hrtf\\*.mhr", &fileData);
-
-	if (hFind == INVALID_HANDLE_VALUE)
-		throw std::logic_error("No mhr files found in hrtf directory.");
-
-	do
-	{
-		dataFiles.push_back(std::wstring(L"hrtf\\") + fileData.cFileName);
-	} while (FindNextFileW(hFind, &fileData));
-
-	FindClose(hFind);
-	
-	auto hrtfEffectFactory = [hrtfData = std::make_shared<HrtfDataSet>(dataFiles)]()
+	auto hrtfEffectFactory = [hrtfData = std::move(hrtfData)]()
 	{
 		auto instance = new HrtfXapoEffect(hrtfData);
 		instance->Initialize(nullptr, 0);
 		return instance;
 	};
 
-	self->set_graph_factory([hrtfEffectFactory = std::move(hrtfEffectFactory)](auto xaudio) { return new AudioGraphMapper(xaudio, &get_spatialized_data_extractor(), hrtfEffectFactory); });
+	self->SetGraphFactory([hrtfEffectFactory = std::move(hrtfEffectFactory), &spatializedDataExtractor](auto & xaudio) { return new AudioGraphMapper(xaudio, spatializedDataExtractor, hrtfEffectFactory); });
 
 	self->InternalFinalConstructAddRef();
 	HRESULT hr = self->_AtlInitialConstruct();
@@ -52,7 +36,7 @@ HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** p
 
 	if (SUCCEEDED(hr))
 	{
-		hr = original->QueryInterface(__uuidof(IXAudio2), reinterpret_cast<void**>(&self->m_original));
+		hr = original->QueryInterface(__uuidof(IXAudio2), reinterpret_cast<void**>(&self->_original));
 	}
 
 	if (SUCCEEDED(hr))
@@ -62,7 +46,7 @@ HRESULT XAudio2Proxy::CreateInstance(IUnknown * original, REFIID riid, void ** p
 		delete self;
 
 #if defined(_DEBUG)
-	XAUDIO2_DEBUG_CONFIGURATION config = { 0 };
+	XAUDIO2_DEBUG_CONFIGURATION config = { };
 	config.LogThreadID = true;
 	config.TraceMask = XAUDIO2_LOG_WARNINGS;
 	//config.TraceMask = config.TraceMask | XAUDIO2_LOG_FUNC_CALLS | XAUDIO2_LOG_DETAIL;
@@ -91,41 +75,41 @@ HRESULT XAudio2Proxy::CreateActualDebugInstance(IUnknown* original, const IID& r
 
 STDMETHODIMP XAudio2Proxy::GetDeviceCount(UINT32 * pCount)
 {
-	return m_original->GetDeviceCount(pCount);
+	return _original->GetDeviceCount(pCount);
 }
 
 STDMETHODIMP XAudio2Proxy::GetDeviceDetails(UINT32 Index, XAUDIO2_DEVICE_DETAILS * pDeviceDetails)
 {
-	return m_original->GetDeviceDetails(Index, pDeviceDetails);
+	return _original->GetDeviceDetails(Index, pDeviceDetails);
 }
 
 STDMETHODIMP XAudio2Proxy::Initialize(UINT32 Flags, XAUDIO2_PROCESSOR XAudio2Processor)
 {
 	logger::logDebug("Initializing XAudio2Proxy");
-	HRESULT result = m_original->Initialize(Flags | XAUDIO2_DEBUG_ENGINE, XAudio2Processor);
+	const HRESULT result = _original->Initialize(Flags | XAUDIO2_DEBUG_ENGINE, XAudio2Processor);
 	logger::logDebug(L"(Not)constructed XAudio2Proxy with result " + std::to_wstring(result));
 
-	m_graph.reset(m_graph_factory(m_original));
+	_graph.reset(_graphFactory(*_original));
 
 	return result;
 }
 
 STDMETHODIMP XAudio2Proxy::RegisterForCallbacks(IXAudio2EngineCallback * pCallback)
 {
-	return m_original->RegisterForCallbacks(pCallback);
+	return _original->RegisterForCallbacks(pCallback);
 }
 
 STDMETHODIMP_(void) XAudio2Proxy::UnregisterForCallbacks(IXAudio2EngineCallback * pCallback)
 {
-	m_original->UnregisterForCallbacks(pCallback);
+	_original->UnregisterForCallbacks(pCallback);
 }
 
 STDMETHODIMP XAudio2Proxy::CreateSourceVoice(IXAudio2SourceVoice ** ppSourceVoice, const WAVEFORMATEX * pSourceFormat, UINT32 Flags, float MaxFrequencyRatio,
-											 IXAudio2VoiceCallback * pCallback, const XAUDIO2_VOICE_SENDS * pSendList, const XAUDIO2_EFFECT_CHAIN * pEffectChain)
+	IXAudio2VoiceCallback * pCallback, const XAUDIO2_VOICE_SENDS * pSendList, const XAUDIO2_EFFECT_CHAIN * pEffectChain)
 {
 	try
 	{
-		*ppSourceVoice = m_graph->CreateSourceVoice(pSourceFormat, Flags, MaxFrequencyRatio, pCallback, pSendList, pEffectChain);
+		*ppSourceVoice = _graph->CreateSourceVoice(pSourceFormat, Flags, MaxFrequencyRatio, pCallback, pSendList, pEffectChain);
 		return S_OK;
 	}
 	catch (std::bad_alloc &)
@@ -138,7 +122,7 @@ STDMETHODIMP XAudio2Proxy::CreateSubmixVoice(IXAudio2SubmixVoice ** ppSubmixVoic
 {
 	try
 	{
-		*ppSubmixVoice = m_graph->CreateSubmixVoice(InputChannels, InputSampleRate, Flags, ProcessingStage, pSendList, pEffectChain);
+		*ppSubmixVoice = _graph->CreateSubmixVoice(InputChannels, InputSampleRate, Flags, ProcessingStage, pSendList, pEffectChain);
 		return S_OK;
 	}
 	catch (std::bad_alloc &)
@@ -151,7 +135,7 @@ STDMETHODIMP XAudio2Proxy::CreateMasteringVoice(IXAudio2MasteringVoice ** ppMast
 {
 	try
 	{
-		*ppMasteringVoice = m_graph->CreateMasteringVoice(InputChannels, InputSampleRate, Flags, DeviceIndex, pEffectChain);
+		*ppMasteringVoice = _graph->CreateMasteringVoice(InputChannels, InputSampleRate, Flags, DeviceIndex, pEffectChain);
 		return S_OK;
 	}
 	catch (std::bad_alloc &)
@@ -162,30 +146,30 @@ STDMETHODIMP XAudio2Proxy::CreateMasteringVoice(IXAudio2MasteringVoice ** ppMast
 
 STDMETHODIMP XAudio2Proxy::StartEngine()
 {
-	return m_original->StartEngine();
+	return _original->StartEngine();
 }
 
 STDMETHODIMP_(void) XAudio2Proxy::StopEngine()
 {
-	m_original->StopEngine();
+	_original->StopEngine();
 }
 
 STDMETHODIMP XAudio2Proxy::CommitChanges(UINT32 OperationSet)
 {
-	return m_original->CommitChanges(OperationSet);
+	return _original->CommitChanges(OperationSet);
 }
 
 STDMETHODIMP_(void) XAudio2Proxy::GetPerformanceData(XAUDIO2_PERFORMANCE_DATA * pPerfData)
 {
-	return m_original->GetPerformanceData(pPerfData);
+	return _original->GetPerformanceData(pPerfData);
 }
 
-void XAudio2Proxy::set_graph_factory(const AudioGraphFactory & factory)
+void XAudio2Proxy::SetGraphFactory(AudioGraphFactory factory)
 {
-	m_graph_factory = factory;
+	_graphFactory = std::move(factory);
 }
 
 STDMETHODIMP_(void) XAudio2Proxy::SetDebugConfiguration(const XAUDIO2_DEBUG_CONFIGURATION * pDebugConfiguration, void * pReserved)
 {
-	m_original->SetDebugConfiguration(pDebugConfiguration, pReserved);
+	_original->SetDebugConfiguration(pDebugConfiguration, pReserved);
 }

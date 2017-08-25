@@ -53,7 +53,7 @@ class AudioGraphMapper
 {
 public:
 	// AudioGraphMapper does not own xaudio
-	AudioGraphMapper(IXAudio2 * xaudio, ISpatializedDataExtractor * spatializedDataExtractor, hrtf_effect_factory hrtfEffectFactory);
+	AudioGraphMapper(IXAudio2 & xaudio, ISpatializedDataExtractor & spatializedDataExtractor, hrtf_effect_factory hrtfEffectFactory);
 	AudioGraphMapper(const AudioGraphMapper &) = delete;
 	AudioGraphMapper& operator=(const AudioGraphMapper& other) = delete;
 
@@ -83,8 +83,8 @@ public:
 
 
 private:
-	IXAudio2 * _xaudio;
-	ISpatializedDataExtractor * _spatializedDataExtractor;
+	IXAudio2 & _xaudio;
+	ISpatializedDataExtractor & _spatializedDataExtractor;
 	hrtf_effect_factory _hrtfEffectFactory;
 	std::map<IXAudio2Voice*, std::unique_ptr<Node>> _nodes;
 	Node * _masteringNode;
