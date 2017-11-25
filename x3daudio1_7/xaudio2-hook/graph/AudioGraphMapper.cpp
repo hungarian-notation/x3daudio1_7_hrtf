@@ -324,7 +324,7 @@ void AudioGraphMapper::setupCommonCallbacks(XAudio2VoiceProxy* proxyVoice, const
 				tailVoiceDescriptor.isSpatialized = false;
 			}
 
-			const auto clientMatrix = source->getOutputMatrix(pDestinationProxy);
+			auto clientMatrix = source->getOutputMatrix(pDestinationProxy);
 
 			ChannelMatrix matrix;
 
