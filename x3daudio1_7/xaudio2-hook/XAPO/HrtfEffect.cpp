@@ -3,8 +3,8 @@
 #include "HrtfEffect.h"
 #include "logger.h"
 #include <algorithm>
-
-#include <intrin.h>
+#include <numeric>
+#include <utility>
 
 constexpr UINT32 OutputChannelCount = 2;
 
@@ -20,10 +20,10 @@ XAPO_REGISTRATION_PROPERTIES HrtfXapoEffect::_regProps = {
 	| XAPO_FLAG_INPLACE_SUPPORTED,
 	1, 1, 1, 1 };
 
-HrtfXapoEffect::HrtfXapoEffect(const std::shared_ptr<IHrtfDataSet> & hrtfData) :
+HrtfXapoEffect::HrtfXapoEffect(std::shared_ptr<IHrtfDataSet> hrtfData) :
 	CXAPOParametersBase(&_regProps, reinterpret_cast<BYTE*>(_params), sizeof(HrtfXapoParam), FALSE)
 	, _timePerFrame(0)
-	, _hrtfDataSet(hrtfData)
+	, _hrtfDataSet(std::move(hrtfData))
 	, _hrtfData(nullptr)
 	, _invalidBuffersCount(0)
 	, _buffersPerHistory(0)
@@ -149,36 +149,7 @@ void HrtfXapoEffect::Convolve(const UINT32 frameIndex, DirectionData& hrtfData, 
 
 	_ASSERT(static_cast<int>(startSignalIndex) - static_cast<int>(hrtfData.impulse_response.size()) >= 0);
 
-#if 1
-
-	const UINT32 wholePackCount = UINT32(hrtfData.impulse_response.size()) / 4;
-	const UINT32 remainderCount = UINT32(hrtfData.impulse_response.size()) % 4;
-
-	__m128 packedSum = _mm_setzero_ps();
-	for (UINT32 i = 0; i < wholePackCount; i++)
-	{
-		const __m128 reversedSignal = _mm_loadu_ps(&_signal[startSignalIndex - (i * 4) - 3]);
-		const __m128 signal = _mm_shuffle_ps(reversedSignal, reversedSignal, _MM_SHUFFLE(0, 1, 2, 3));
-		const __m128 response = _mm_loadu_ps(&hrtfData.impulse_response[i * 4]);
-		packedSum = _mm_add_ps(packedSum, _mm_mul_ps(signal, response));
-	}
-	packedSum = _mm_hadd_ps(_mm_hadd_ps(packedSum, packedSum), packedSum);
-	float sum = _mm_cvtss_f32(packedSum);
-
-	for (UINT32 i = 0; i < remainderCount; i++)
-	{
-		sum += _signal[startSignalIndex - (i + wholePackCount * 4)] * hrtfData.impulse_response[i + wholePackCount * 4];
-	}
-	output = sum;
-#else
-	float sum = 0.0f;
-	const auto size = hrtf_data.impulse_response.size();
-	for (UINT32 i = 0; i < size; i++)
-	{
-		sum += _signal[start_signal_index - i] * hrtf_data.impulse_response[i];
-	}
-	output = sum;
-#endif
+	output = std::transform_reduce(std::begin(_signal) + startSignalIndex - hrtfData.impulse_response.size(), std::begin(_signal) + startSignalIndex, std::begin(hrtfData.impulse_response), 0.0f);
 }
 
 void HrtfXapoEffect::ProcessFrame(float& leftOutput, float& rightOutput, const UINT32 frameIndex)

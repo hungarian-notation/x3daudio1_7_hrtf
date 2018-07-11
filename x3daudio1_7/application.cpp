@@ -9,8 +9,10 @@
 #include "x3daudio-hook/Sequenced/SequencedX3DAudioProxy.h"
 #include "proxy/XAudio2Proxy.h"
 #include "hrtf/MhrData/MhrHrtfDataSet.h"
+#include "logger.h"
 
 #define GLUE_SEQUENCED
+//#define GLUE_MATRIX_ENCODING
 //#define CREATE_AUTHENTIC_DEBUG_XAUDIO
 
 std::unique_ptr<ISpatializationGlue> s_glue;

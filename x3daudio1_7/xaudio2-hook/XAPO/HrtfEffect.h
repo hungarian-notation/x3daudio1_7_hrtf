@@ -15,7 +15,7 @@
 class __declspec(uuid("{80D4BED4-7605-4E4C-B29C-5579C375C599}")) HrtfXapoEffect : public CXAPOParametersBase
 {
 public:
-	explicit HrtfXapoEffect(const std::shared_ptr<IHrtfDataSet> & hrtfData);
+	explicit HrtfXapoEffect(std::shared_ptr<IHrtfDataSet> hrtfData);
 
 	// Inherited via CXAPOParametersBase
 	STDMETHOD(LockForProcess)(UINT32 inputLockedParameterCount, const XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS * pInputLockedParameters, UINT32 outputLockedParameterCount, const XAPO_LOCKFORPROCESS_BUFFER_PARAMETERS * pOutputLockedParameters) override;
