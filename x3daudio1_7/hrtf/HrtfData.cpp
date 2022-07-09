@@ -21,7 +21,7 @@ void read_stream(std::istream & stream, T & value)
 
 HrtfData::HrtfData(std::istream & stream)
 {
-	const char required_magic[] = { 'M', 'i', 'n', 'P', 'H', 'R', '0', '1' };
+	const char required_magic[] = { 'M', 'i', 'n', 'P', 'H', 'R', '0', '3' };
 	char actual_magic[sizeof(required_magic) / sizeof(required_magic[0])];
 
 	stream.read(actual_magic, sizeof(actual_magic));
@@ -32,50 +32,62 @@ HrtfData::HrtfData(std::istream & stream)
 
 	file_sample_rate_t sample_rate;
 	file_impulse_response_length_t impulse_response_length;
-	file_elevations_count_t elevations_count;
+	file_distances_count_t distances_count;
 
 	read_stream(stream, sample_rate);
 	read_stream(stream, impulse_response_length);
-	read_stream(stream, elevations_count);
-
-	std::vector<ElevationData> elevations(elevations_count);
-
-	for (file_elevations_count_t i = 0; i < elevations_count; i++)
+	read_stream(stream, distances_count);
+	
+	std::vector<DistanceData> distances(distances_count);
+	
+	for (file_distances_count_t i = distances_count - 1; i < distances_count; i--)
 	{
-		file_azimuth_count_t azimuth_count;
-		read_stream(stream, azimuth_count);
-		elevations[i].azimuths.resize(azimuth_count);
+		file_elevations_count_t elevations_count;
+		read_stream(stream, elevations_count);
+		distances[i].elevations.resize(elevations_count);
+		
+		for (file_elevations_count j = 0; j < elevations_count; j++)
+		{
+			file_azimuth_count azimuth_count;
+			read_stream(stream, azimuth_count);
+			distances[i].elevations[j].azimuths.resize(azimuth_count);
+		}
 	}
 
 	const float normalization_factor = 1.0f / float(1 << (sizeof(file_sample_t) * 8 - 1));
 
-	for (auto& elevation : elevations)
+	for (auto& distance : distances)
 	{
-		for (auto& azimuth : elevation.azimuths)
-		{
-			azimuth.impulse_response.resize(impulse_response_length);
-			for (auto& sample : azimuth.impulse_response)
-			{
-				file_sample_t sample_from_file;
-				read_stream(stream, sample_from_file);
-				sample = sample_from_file * normalization_factor;
+	        for (auto& elevation : distance.elevations)
+	        {
+		        for (auto& azimuth : elevation.azimuths)
+		        {
+			        azimuth.impulse_response.resize(impulse_response_length);
+			        for (auto& sample : azimuth.impulse_response)
+			        {
+				        file_sample_t sample_from_file;
+				        read_stream(stream, sample_from_file);
+				        sample = sample_from_file * normalization_factor;
+				}
 			}
 		}
 	}
 
 	file_delay_t longest_delay = 0;
-	for (auto& elevation : elevations)
-	{
-		for (auto& azimuth : elevation.azimuths)
-		{
-			file_delay_t delay;
-			read_stream(stream, delay);
-			azimuth.delay = delay;
-			longest_delay = std::max(longest_delay, delay);
+	for (auto& distance : distances)
+	        for (auto& elevation : distance.elevations)
+	        {
+		        for (auto& azimuth : elevation.azimuths)
+		        {
+			        file_delay_t delay;
+			        read_stream(stream, delay);
+			        azimuth.delay = delay;
+			        longest_delay = std::max(longest_delay, delay);
+			}
 		}
 	}
 
-	m_elevations = std::move(elevations);
+	m_distances = std::move(distances);
 	m_response_length = impulse_response_length;
 	m_sample_rate = sample_rate;
 	m_longest_delay = longest_delay;
