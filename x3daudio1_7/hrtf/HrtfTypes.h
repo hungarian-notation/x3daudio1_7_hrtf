@@ -12,4 +12,5 @@ struct DirectionData
 {
 	std::vector<float> impulse_response;
 	delay_t delay;
+	delay_t delay_right;
 };

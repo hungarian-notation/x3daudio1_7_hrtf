@@ -1,9 +1,7 @@
 #pragma once
 
 // The functions provide little endianness to native endianness conversion and back again
-#if defined(_MSC_VER)
-
-#if defined(_WIN32) // Windows is always little-endian, isn't it? What about ARM?
+#if (defined(_MSC_VER) && defined(_WIN32)) || defined(__APPLE__)
 template <typename T>
 inline void from_little_endian_inplace(T & x) { }
 
@@ -16,9 +14,6 @@ inline void to_little_endian_inplace(T & x) { }
 template <typename T>
 inline T to_little_endian(T x) { return x; }
 
-#else
-#error "Specify endianness conversion for your platform"
-#endif
 #else
 #error "Specify endianness conversion for your platform"
 #endif
