@@ -4,10 +4,12 @@
 #include <algorithm>
 
 typedef uint8_t file_impulse_response_length_t;
+typedef uint8_t file_channel_type_t;
+typedef uint8_t file_distances_count_t;
 typedef uint8_t file_elevations_count_t;
 typedef uint8_t file_azimuth_count_t;
 typedef uint32_t file_sample_rate_t;
-typedef int16_t file_sample_t;
+typedef struct { union { int32_t i:24; uint8_t b[3]; } u; ) file_sample_t;
 typedef uint8_t file_delay_t;
 
 const double pi = 3.1415926535897932385;
@@ -31,17 +33,28 @@ HrtfData::HrtfData(std::istream & stream)
 	}
 
 	file_sample_rate_t sample_rate;
+	file_channel_type_t channel_type;
 	file_impulse_response_length_t impulse_response_length;
 	file_distances_count_t distances_count;
 
 	read_stream(stream, sample_rate);
+	read_stream(stream, channel_type);
 	read_stream(stream, impulse_response_length);
 	read_stream(stream, distances_count);
+	
+	if (channel_type != 0 && channel_type != 1)
+	{
+		throw std::logic_error("Bad file format.");
+	}
 	
 	std::vector<DistanceData> distances(distances_count);
 	
 	for (file_distances_count_t i = distances_count - 1; i < distances_count; i--)
 	{
+		file_distance_t distance;
+		read_stream(stream, distance);
+		distances[i].distance = float(distance) / 1000.0;
+		
 		file_elevations_count_t elevations_count;
 		read_stream(stream, elevations_count);
 		distances[i].elevations.resize(elevations_count);
@@ -62,7 +75,8 @@ HrtfData::HrtfData(std::istream & stream)
 	        {
 		        for (auto& azimuth : elevation.azimuths)
 		        {
-			        azimuth.impulse_response.resize(impulse_response_length);
+				size_t channel_count = channel_type == 1 ? 2 : 1;
+			        azimuth.impulse_response.resize(impulse_response_length * channel_count);
 			        for (auto& sample : azimuth.impulse_response)
 			        {
 				        file_sample_t sample_from_file;
@@ -75,6 +89,7 @@ HrtfData::HrtfData(std::istream & stream)
 
 	file_delay_t longest_delay = 0;
 	for (auto& distance : distances)
+	{
 	        for (auto& elevation : distance.elevations)
 	        {
 		        for (auto& azimuth : elevation.azimuths)
@@ -83,11 +98,18 @@ HrtfData::HrtfData(std::istream & stream)
 			        read_stream(stream, delay);
 			        azimuth.delay = delay;
 			        longest_delay = std::max(longest_delay, delay);
+				if (channel_type == 1)
+				{
+					read_stream(stream, delay);
+					azimuth.delay_right = delay;
+					longest_delay = std::max(longest_delay, delay);
+				}
 			}
 		}
 	}
 
 	m_distances = std::move(distances);
+	m_channel_count = channel_type == 1 ? 2 : 1;
 	m_response_length = impulse_response_length;
 	m_sample_rate = sample_rate;
 	m_longest_delay = longest_delay;
