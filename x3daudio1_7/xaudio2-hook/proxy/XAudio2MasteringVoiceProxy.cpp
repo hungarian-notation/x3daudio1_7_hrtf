@@ -6,7 +6,7 @@
 
 
 XAudio2MasteringVoiceProxy::XAudio2MasteringVoiceProxy(UINT32 inputChannels, UINT32 inputSampleRate, UINT32 flags, UINT32 deviceIndex, const effect_chain& effectChain)
-	: XAudio2VoiceProxy(inputChannels, inputSampleRate, flags,std::numeric_limits<int>::max(), VoiceSends(), effectChain)
+	: XAudio2VoiceProxy(inputChannels == XAUDIO2_DEFAULT_CHANNELS ? 2 : inputChannels, inputSampleRate, flags,std::numeric_limits<int>::max(), VoiceSends(), effectChain)
 	, m_deviceIndex(deviceIndex)
 {
 }

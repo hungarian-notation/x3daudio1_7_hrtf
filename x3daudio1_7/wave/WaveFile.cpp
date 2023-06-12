@@ -2,6 +2,7 @@
 #include "WaveFile.h"
 
 #include "logger.h"
+#include <cstddef>
 
 struct wavfile_header
 {
@@ -70,7 +71,7 @@ WaveFile::~WaveFile()
 	m_stream.close();
 }
 
-void WaveFile::AppendData(const uint8_t * buffer, size_t length)
+void WaveFile::AppendData(const uint8_t * buffer, uint32_t length)
 {
 	m_stream.write(reinterpret_cast<const char*>(buffer), length);
 	m_stream.flush();

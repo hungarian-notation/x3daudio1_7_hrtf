@@ -7,7 +7,10 @@
 
 #include <memory>
 #include <functional>
+#include "hrtf/IHrtfDataSet.h"
+#include <memory>
 
+class ISpatializedDataExtractor;
 class AudioGraphMapper;
 
 
@@ -25,15 +28,12 @@ public:
 	BEGIN_COM_MAP(XAudio2Proxy)
 		COM_INTERFACE_ENTRY(IXAudio2)
 		COM_INTERFACE_ENTRY(IUnknown)
-		END_COM_MAP()
+	END_COM_MAP()
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
 public:
-	HRESULT FinalConstruct();
-	void FinalRelease();
-public:
-	HRESULT static CreateInstance(IUnknown * original, REFIID riid, void ** ppvObject);
+	HRESULT static CreateInstance(IUnknown * original, REFIID riid, void ** ppvObject, std::shared_ptr<IHrtfDataSet> hrtfData, ISpatializedDataExtractor & spatializedDataExtractor);
 	HRESULT static CreateActualDebugInstance(IUnknown * original, REFIID riid, void ** ppvObject);
 public:
 
@@ -180,12 +180,12 @@ public:
 	                                                 __in_opt __reserved void * pReserved X2DEFAULT(NULL));
 
 public:
-	typedef std::function<AudioGraphMapper *(IXAudio2 * xaudio)> AudioGraphFactory;
+	typedef std::function<AudioGraphMapper *(IXAudio2 & xaudio)> AudioGraphFactory;
 
-	void set_graph_factory(const AudioGraphFactory & factory);
+	void SetGraphFactory(AudioGraphFactory factory);
 
 private:
-	ATL::CComPtr<IXAudio2> m_original;
-	AudioGraphFactory m_graph_factory;
-	std::unique_ptr<AudioGraphMapper> m_graph;
+	ATL::CComPtr<IXAudio2> _original;
+	AudioGraphFactory _graphFactory;
+	std::unique_ptr<AudioGraphMapper> _graph;
 };

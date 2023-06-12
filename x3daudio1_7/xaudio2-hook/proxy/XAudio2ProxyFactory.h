@@ -13,26 +13,15 @@ public:
 
 	BEGIN_COM_MAP(XAudio2ProxyFactory)
 		COM_INTERFACE_ENTRY(IClassFactory)
-		END_COM_MAP()
+	END_COM_MAP()
 
 	DECLARE_PROTECT_FINAL_CONSTRUCT()
 
-public:
-	HRESULT FinalConstruct()
-	{
-		return S_OK;
-	}
-
-	void FinalRelease()
-	{
-	}
-
 	static HRESULT CreateFactory(IClassFactory * originalFactory, void ** proxyFactory);
 
-public:
-	STDMETHODIMP CreateInstance(IUnknown * pUnkOuter, REFIID riid, void ** ppvObject);
-	STDMETHODIMP LockServer(BOOL fLock);
+	STDMETHODIMP CreateInstance(IUnknown * pUnkOuter, REFIID riid, void ** ppvObject) override;
+	STDMETHODIMP LockServer(BOOL fLock) override;
 
 private:
-	ATL::CComPtr<IClassFactory> m_OriginalFactory;
+	ATL::CComPtr<IClassFactory> _originalFactory;
 };

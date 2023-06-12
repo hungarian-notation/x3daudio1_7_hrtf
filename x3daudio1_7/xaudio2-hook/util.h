@@ -89,14 +89,14 @@ inline void vector_to_buffer(const std::vector<int8_t> & vec, void * pBuffer, UI
 
 inline void from_ChannelMatrix(const ChannelMatrix & matrix, UINT32 sourceChannels, UINT32 destinationChannels, float * pLevelMatrix)
 {
-	if (matrix.getSourceCount() != sourceChannels || matrix.getDestinationCount() != destinationChannels)
+	if (matrix.GetSourceCount() != sourceChannels || matrix.GetDestinationCount() != destinationChannels)
 		throw std::invalid_argument("Matrix size mismatch");
 
 	for (UINT32 destIndex = 0; destIndex < destinationChannels; destIndex++)
 	{
 		for (UINT32 srcIndex = 0; srcIndex < sourceChannels; srcIndex++)
 		{
-			pLevelMatrix[destIndex * sourceChannels + srcIndex] = matrix.getValue(srcIndex, destIndex);
+			pLevelMatrix[destIndex * sourceChannels + srcIndex] = matrix.GetValue(srcIndex, destIndex);
 		}
 	}
 }
@@ -117,7 +117,7 @@ inline XAUDIO2_VOICE_SENDS from_voice_sends(VoiceSends & sends)
 
 	XAUDIO2_VOICE_SENDS sendsStruct;
 	sendsStruct.SendCount = static_cast<UINT32>(sends.getVoices().size());
-	sendsStruct.pSends = const_cast<XAUDIO2_SEND_DESCRIPTOR*>(&*sends.getVoices().begin());
+	sendsStruct.pSends = sends.getVoices().empty() ? nullptr : const_cast<XAUDIO2_SEND_DESCRIPTOR*>(&*sends.getVoices().begin());
 	return sendsStruct;
 }
 
@@ -144,83 +144,83 @@ inline ChannelMatrix adaptChannelMatrixToStereoOutput(const ChannelMatrix & sour
 	9 or more		No implicit positions (one-to-one mapping)
 	*/
 
-	if (sourceMatrix.getDestinationCount() == 1)
+	if (sourceMatrix.GetDestinationCount() == 1)
 	{
-		ChannelMatrix matrix(sourceMatrix.getSourceCount(), 2);
-		for (UINT32 i = 0; i < sourceMatrix.getSourceCount(); i++)
+		ChannelMatrix matrix(sourceMatrix.GetSourceCount(), 2);
+		for (UINT32 i = 0; i < sourceMatrix.GetSourceCount(); i++)
 		{
-			matrix.setValue(i, 0, sourceMatrix.getValue(i, 0));
-			matrix.setValue(i, 1, sourceMatrix.getValue(i, 0));
+			matrix.SetValue(i, 0, sourceMatrix.GetValue(i, 0));
+			matrix.SetValue(i, 1, sourceMatrix.GetValue(i, 0));
 		}
 		return matrix;
 	}
-	else if (sourceMatrix.getDestinationCount() == 2)
+	else if (sourceMatrix.GetDestinationCount() == 2)
 	{
 		return sourceMatrix;
 	}
-	else if (sourceMatrix.getDestinationCount() == 3)
+	else if (sourceMatrix.GetDestinationCount() == 3)
 	{
-		ChannelMatrix matrix(sourceMatrix.getSourceCount(), 2);
+		ChannelMatrix matrix(sourceMatrix.GetSourceCount(), 2);
 
-		for (UINT32 i = 0; i < sourceMatrix.getSourceCount(); i++)
+		for (UINT32 i = 0; i < sourceMatrix.GetSourceCount(); i++)
 		{
-			matrix.setValue(i, 0, sourceMatrix.getValue(i, 0) + sourceMatrix.getValue(i, 2) * 0.5f);
-			matrix.setValue(i, 1, sourceMatrix.getValue(i, 1) + sourceMatrix.getValue(i, 2) * 0.5f);
+			matrix.SetValue(i, 0, sourceMatrix.GetValue(i, 0) + sourceMatrix.GetValue(i, 2) * 0.5f);
+			matrix.SetValue(i, 1, sourceMatrix.GetValue(i, 1) + sourceMatrix.GetValue(i, 2) * 0.5f);
 		}
 		return matrix;
 	}
-	else if (sourceMatrix.getDestinationCount() == 4)
+	else if (sourceMatrix.GetDestinationCount() == 4)
 	{
-		ChannelMatrix matrix(sourceMatrix.getSourceCount(), 2);
+		ChannelMatrix matrix(sourceMatrix.GetSourceCount(), 2);
 
-		for (UINT32 i = 0; i < sourceMatrix.getSourceCount(); i++)
+		for (UINT32 i = 0; i < sourceMatrix.GetSourceCount(); i++)
 		{
-			matrix.setValue(i, 0, sourceMatrix.getValue(i, 0) * 0.667f + sourceMatrix.getValue(i, 2) * 0.333f);
-			matrix.setValue(i, 1, sourceMatrix.getValue(i, 1) * 0.667f + sourceMatrix.getValue(i, 3) * 0.333f);
+			matrix.SetValue(i, 0, sourceMatrix.GetValue(i, 0) * 0.667f + sourceMatrix.GetValue(i, 2) * 0.333f);
+			matrix.SetValue(i, 1, sourceMatrix.GetValue(i, 1) * 0.667f + sourceMatrix.GetValue(i, 3) * 0.333f);
 		}
 		return matrix;
 	}
-	else if (sourceMatrix.getDestinationCount() == 5)
+	else if (sourceMatrix.GetDestinationCount() == 5)
 	{
-		ChannelMatrix matrix(sourceMatrix.getSourceCount(), 2);
+		ChannelMatrix matrix(sourceMatrix.GetSourceCount(), 2);
 
-		for (UINT32 i = 0; i < sourceMatrix.getSourceCount(); i++)
+		for (UINT32 i = 0; i < sourceMatrix.GetSourceCount(); i++)
 		{
-			matrix.setValue(i, 0, sourceMatrix.getValue(i, 0) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 3) * 0.333f);
-			matrix.setValue(i, 1, sourceMatrix.getValue(i, 1) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 4) * 0.333f);
+			matrix.SetValue(i, 0, sourceMatrix.GetValue(i, 0) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 3) * 0.333f);
+			matrix.SetValue(i, 1, sourceMatrix.GetValue(i, 1) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 4) * 0.333f);
 		}
 		return matrix;
 	}
-	else if (sourceMatrix.getDestinationCount() == 6)
+	else if (sourceMatrix.GetDestinationCount() == 6)
 	{
-		ChannelMatrix matrix(sourceMatrix.getSourceCount(), 2);
+		ChannelMatrix matrix(sourceMatrix.GetSourceCount(), 2);
 
-		for (UINT32 i = 0; i < sourceMatrix.getSourceCount(); i++)
+		for (UINT32 i = 0; i < sourceMatrix.GetSourceCount(); i++)
 		{
-			matrix.setValue(i, 0, sourceMatrix.getValue(i, 0) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 3) * 0.1f + sourceMatrix.getValue(i, 4) * 0.333f);
-			matrix.setValue(i, 1, sourceMatrix.getValue(i, 1) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 3) * 0.1f + sourceMatrix.getValue(i, 5) * 0.333f);
+			matrix.SetValue(i, 0, sourceMatrix.GetValue(i, 0) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 3) * 0.1f + sourceMatrix.GetValue(i, 4) * 0.333f);
+			matrix.SetValue(i, 1, sourceMatrix.GetValue(i, 1) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 3) * 0.1f + sourceMatrix.GetValue(i, 5) * 0.333f);
 		}
 		return matrix;
 	}
-	else if (sourceMatrix.getDestinationCount() == 7)
+	else if (sourceMatrix.GetDestinationCount() == 7)
 	{
-		ChannelMatrix matrix(sourceMatrix.getSourceCount(), 2);
+		ChannelMatrix matrix(sourceMatrix.GetSourceCount(), 2);
 
-		for (UINT32 i = 0; i < sourceMatrix.getSourceCount(); i++)
+		for (UINT32 i = 0; i < sourceMatrix.GetSourceCount(); i++)
 		{
-			matrix.setValue(i, 0, sourceMatrix.getValue(i, 0) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 3) * 0.1f + sourceMatrix.getValue(i, 4) * 0.333f + sourceMatrix.getValue(i, 6) * 0.15f);
-			matrix.setValue(i, 1, sourceMatrix.getValue(i, 1) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 3) * 0.1f + sourceMatrix.getValue(i, 5) * 0.333f + sourceMatrix.getValue(i, 6) * 0.15f);
+			matrix.SetValue(i, 0, sourceMatrix.GetValue(i, 0) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 3) * 0.1f + sourceMatrix.GetValue(i, 4) * 0.333f + sourceMatrix.GetValue(i, 6) * 0.15f);
+			matrix.SetValue(i, 1, sourceMatrix.GetValue(i, 1) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 3) * 0.1f + sourceMatrix.GetValue(i, 5) * 0.333f + sourceMatrix.GetValue(i, 6) * 0.15f);
 		}
 		return matrix;
 	}
-	else if (sourceMatrix.getDestinationCount() == 8)
+	else if (sourceMatrix.GetDestinationCount() == 8)
 	{
-		ChannelMatrix matrix(sourceMatrix.getSourceCount(), 2);
+		ChannelMatrix matrix(sourceMatrix.GetSourceCount(), 2);
 
-		for (UINT32 i = 0; i < sourceMatrix.getSourceCount(); i++)
+		for (UINT32 i = 0; i < sourceMatrix.GetSourceCount(); i++)
 		{
-			matrix.setValue(i, 0, sourceMatrix.getValue(i, 0) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 3) * 0.1f + sourceMatrix.getValue(i, 4) * 0.333f + sourceMatrix.getValue(i, 6) * 0.333f);
-			matrix.setValue(i, 1, sourceMatrix.getValue(i, 1) * 0.5f + sourceMatrix.getValue(i, 2) * 0.25f + sourceMatrix.getValue(i, 3) * 0.1f + sourceMatrix.getValue(i, 5) * 0.333f + sourceMatrix.getValue(i, 7) * 0.333f);
+			matrix.SetValue(i, 0, sourceMatrix.GetValue(i, 0) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 3) * 0.1f + sourceMatrix.GetValue(i, 4) * 0.333f + sourceMatrix.GetValue(i, 6) * 0.333f);
+			matrix.SetValue(i, 1, sourceMatrix.GetValue(i, 1) * 0.5f + sourceMatrix.GetValue(i, 2) * 0.25f + sourceMatrix.GetValue(i, 3) * 0.1f + sourceMatrix.GetValue(i, 5) * 0.333f + sourceMatrix.GetValue(i, 7) * 0.333f);
 		}
 		return matrix;
 	}

@@ -6,13 +6,10 @@
 #include <stdexcept>
 #include "mhook/mhook.h"
 
-#include "proxy\XAudio2ProxyFactory.h"
-#include "proxy\XAudio2Proxy.h"
+#include "proxy/XAudio2ProxyFactory.h"
+#include "proxy/XAudio2Proxy.h"
+#include "application.h"
 
-#define WIN32_LEAN_AND_MEAN
-#include <Windows.h>
-
-//#define CREATE_AUTHENTIC_DEBUG_XAUDIO
 
 DEFINE_CLSID(XAudio2_0, fac23f48, 31f5, 45a8, b4, 9b, 52, 25, d6, 14, 01, aa);
 DEFINE_CLSID(XAudio2_1, e21a7345, eb21, 468e, be, 50, 80, 4d, b9, 7c, f7, 08);
@@ -30,8 +27,8 @@ namespace Hook
 	HRESULT WINAPI CoGetClassObject(REFCLSID rclsid, DWORD dwClsContext, COSERVERINFO * pServerInfo, REFIID riid, LPVOID * ppv);
 };
 
-typedef HRESULT (WINAPI *CoCreateInstance_T)(REFCLSID, LPUNKNOWN, DWORD, REFIID, LPVOID *);
-typedef HRESULT (WINAPI *CoGetClassObject_T)(REFCLSID rclsid, DWORD dwClsContext, COSERVERINFO * pServerInfo, REFIID riid, LPVOID * ppv);
+typedef HRESULT(WINAPI *CoCreateInstance_T)(REFCLSID, LPUNKNOWN, DWORD, REFIID, LPVOID *);
+typedef HRESULT(WINAPI *CoGetClassObject_T)(REFCLSID rclsid, DWORD dwClsContext, COSERVERINFO * pServerInfo, REFIID riid, LPVOID * ppv);
 
 namespace Original
 {
@@ -63,9 +60,16 @@ HRESULT WINAPI Hook::CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWOR
 {
 #if !defined(BYPASS_COM_HOOK)
 	if (
-		rclsid == __uuidof(XAudio2) || rclsid == __uuidof(XAudio2_6) || rclsid == __uuidof(XAudio2_5) || rclsid == __uuidof(XAudio2_4) || rclsid == __uuidof(XAudio2_3) || rclsid == __uuidof(XAudio2_2) || rclsid == __uuidof(XAudio2_1) || rclsid == __uuidof(XAudio2_0)
+		rclsid == __uuidof(XAudio2)
+		|| rclsid == __uuidof(XAudio2_6)
+		|| rclsid == __uuidof(XAudio2_5)
+		|| rclsid == __uuidof(XAudio2_4)
+		|| rclsid == __uuidof(XAudio2_3)
+		|| rclsid == __uuidof(XAudio2_2)
+		|| rclsid == __uuidof(XAudio2_1)
+		|| rclsid == __uuidof(XAudio2_0)
 		|| rclsid == __uuidof(XAudio2_Debug)
-		)
+	)
 	{
 		if (pUnkOuter)
 			return CLASS_E_NOAGGREGATION;
@@ -78,12 +82,8 @@ HRESULT WINAPI Hook::CoCreateInstance(REFCLSID rclsid, LPUNKNOWN pUnkOuter, DWOR
 #endif
 		if (FAILED(hr))
 			return hr;
-		
-#if defined(CREATE_AUTHENTIC_DEBUG_XAUDIO)
-		return XAudio2Proxy::CreateActualDebugInstance(originalObject.Detach(), riid, ppv);
-#else
-		return XAudio2Proxy::CreateInstance(originalObject.Detach(), riid, ppv);
-#endif
+
+		return create_xaudio_proxy(originalObject, riid, ppv);
 	}
 #endif
 

@@ -6,11 +6,15 @@
 #include <map>
 #include <memory>
 #include <xaudio2-hook/common_types.h>
+#include <functional>
 
 
-class ISound3DRegistry;
+class HrtfXapoEffect;
+class ISpatializedDataExtractor;
 class XAudio2SourceVoiceProxy;
 class XAudio2VoiceProxy;
+
+typedef std::function<HrtfXapoEffect* ()> hrtf_effect_factory;
 
 class TailVoiceDescriptor
 {
@@ -49,7 +53,7 @@ class AudioGraphMapper
 {
 public:
 	// AudioGraphMapper does not own xaudio
-	AudioGraphMapper(IXAudio2 * xaudio, ISound3DRegistry * spatialSoundRegistry);
+	AudioGraphMapper(IXAudio2 & xaudio, ISpatializedDataExtractor & spatializedDataExtractor, hrtf_effect_factory hrtfEffectFactory);
 	AudioGraphMapper(const AudioGraphMapper &) = delete;
 	AudioGraphMapper& operator=(const AudioGraphMapper& other) = delete;
 
@@ -79,13 +83,14 @@ public:
 
 
 private:
-	IXAudio2 * m_xaudio;
-	ISound3DRegistry * m_spatialSoundRegistry;
-	std::map<IXAudio2Voice*, std::unique_ptr<Node>> m_nodes;
-	Node * m_masteringNode;
-	EdgeRepository<Node*> m_edges;
+	IXAudio2 & _xaudio;
+	ISpatializedDataExtractor & _spatializedDataExtractor;
+	hrtf_effect_factory _hrtfEffectFactory;
+	std::map<IXAudio2Voice*, std::unique_ptr<Node>> _nodes;
+	Node * _masteringNode;
+	EdgeRepository<Node*> _edges;
 
-	static XAUDIO2_VOICE_SENDS _emptySends;
+	static const XAUDIO2_VOICE_SENDS _emptySends;
 
 	VoiceSends mapProxySendsToActualOnes(const VoiceSends & proxySends) const;
 	const Node * getNodeForProxyVoice(IXAudio2Voice* pDestination) const;

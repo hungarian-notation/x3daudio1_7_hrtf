@@ -7,55 +7,55 @@ class ChannelMatrix
 {
 public:
 	ChannelMatrix()
-		: m_sourceCount(0)
-		, m_destinationCount(0)
+		: _sourceCount(0)
+		, _destinationCount(0)
 	{
 
 	}
 
 	ChannelMatrix(unsigned int sourceCount, unsigned int destinationCount)
-		: m_sourceCount(sourceCount)
-		, m_destinationCount(destinationCount)
-		, m_values(sourceCount * destinationCount)
+		: _sourceCount(sourceCount)
+		, _destinationCount(destinationCount)
+		, _values(sourceCount * destinationCount)
 	{
 		
 	}
 
 	ChannelMatrix(const float * values, unsigned int sourceCount, unsigned int destinationCount)
-		: m_sourceCount(sourceCount)
-		, m_destinationCount(destinationCount)
-		, m_values(sourceCount * destinationCount)
+		: _sourceCount(sourceCount)
+		, _destinationCount(destinationCount)
+		, _values(sourceCount * destinationCount)
 	{
-		auto size = sourceCount * destinationCount;
-		std::copy(values, values + size, std::begin(m_values));
+		const auto size = sourceCount * destinationCount;
+		std::copy(values, values + size, std::begin(_values));
 	}
 
-	unsigned getSourceCount() const
+	unsigned int GetSourceCount() const
 	{
-		return m_sourceCount;
+		return _sourceCount;
 	}
 
-	unsigned getDestinationCount() const
+	unsigned int GetDestinationCount() const
 	{
-		return m_destinationCount;
+		return _destinationCount;
 	}
 
-	float getValue(unsigned source, unsigned destination) const
+	float GetValue(unsigned int source, unsigned int destination) const
 	{
-		_ASSERT(source < m_sourceCount || destination < m_destinationCount);
+		_ASSERT(source < _sourceCount || destination < _destinationCount);
 
-		return m_values[destination * m_sourceCount + source];
+		return _values[destination * _sourceCount + source];
 	}
 
-	void setValue(unsigned source, unsigned destination, float value)
+	void SetValue(unsigned int source, unsigned int destination, float value)
 	{
-		_ASSERT(source < m_sourceCount || destination < m_destinationCount);
+		_ASSERT(source < _sourceCount || destination < _destinationCount);
 
-		m_values[destination * m_sourceCount + source] = value;
+		_values[destination * _sourceCount + source] = value;
 	}
 
 private:
-	unsigned int m_sourceCount;
-	unsigned int m_destinationCount;
-	std::vector<float> m_values;
+	unsigned int _sourceCount;
+	unsigned int _destinationCount;
+	std::vector<float> _values;
 };

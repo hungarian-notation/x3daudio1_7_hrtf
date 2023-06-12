@@ -1,6 +1,7 @@
 # X3DAudio HRTF
-## HRTF for Arma 3, Skyrim, Fallout 4 and potentially other titles using X3dAudio + XAudio2 (except ones running on Unreal Engine).
+## HRTF for Arma 3, Skyrim, Fallout 4 and potentially other titles using X3dAudio + XAudio2 (including ones running on Unreal Engine 4 and UDK).
 
+[![Youtube video](https://s15.postimg.org/slkiotxp7/skyrim.png)](https://www.youtube.com/watch?v=jJPpqssMPl0)
 [![Youtube video](http://s24.postimg.org/iozt6p9ut/skyrim_fake_youtube.png)](http://www.youtube.com/watch?v=hsCgaMeTVG0)
 
 ### Tags
@@ -11,7 +12,19 @@ HRTF, HRIR, Binaural sound, Spatial sound, Ambisonics
 Visit [releases page](https://github.com/kosumosu/x3daudio1_7_hrtf/releases) and grab the latest one. Ensure the version you download matches version of the game (x86 or x64).
 
 ### Installation
-Unpack the contents of the package to the game folder where the main executable is located. Ensure it is the exe of the game itself, not a launcher. If your game uses prior version of x3daudio (earlier than 1.7), you can try to rename the dll to the one the game uses. Run the game. Enjoy!
+#### For Unreal Engine 4 based games
+First, you must locate the _true_ main executable. The one in the root folder is not the one. Inside the root folder there must be another folder that usually has the same name as the game. Within it there must be a folder Binaries\Win64 or Win32. Examples:
+* **Squad**: SteamLibrary\steamapps\common\Squad\Squad\Binaries\Win64
+* **The Vanishing of Ethan Carter Redux**: SteamLibrary\steamapps\common\The Vanishing of Ethan Carter Redux\EthanCarter\Binaries\Win64
+
+Then unpack the archive into this folder, so it's contents lie next to the *true* main executable. Ensure you use the correct (x64 or x86) version of the x3daudio_hrtf.
+#### For UDK based games
+Same as for UE4, but Binaries folder lies right in the root folder. Examples:
+* **The Vanishing of Ethan Carter**: SteamLibrary\steamapps\common\The Vanishing of Ethan Carter\Binaries\Win64
+
+#### For other games
+Unpack the contents of the package to the game folder where the main executable is located. Ensure it is the exe of the game itself, not a launcher. Enjoy!
+
 Note: some anti-cheat software (e.g. BattleEye) won't let you hook anything into the game, so you will have to disable it. That means no HRTF in multiplayer.
 
 #### Notes for developers
@@ -26,13 +39,16 @@ Works well now. No tricky things there. Has pretty complex audio mixing graph, b
 ##### Arma 2
 Has glitches. I haven't investigated them yet. Most sounds were fine, but HMMWV's engine sound was coming from a completely different direction when I was playing. BattleEye must be disabled in order to work.
 
-##### TES V Skyrim
+##### TES V Skyrim (including Special Edition)
 Works perfectly now.
 Skyrim always creates Mastering voice as six-channel. We override it to two-channel.
+For Special Edition use x64 version.
 
 ##### Fallout 4
 Works well. Uses the same codebase as Skyrim, so nothing different here. The only difference is x64 platform.
 
+##### Unreal Engine 4 and UDK based games
+Works well. UE does not pass distance to X3DAudio, only direction. The distance between listener and emitter is always 1. UE calculates volume by itself, so the volume is passed in the matrix.
 
 ### Legal Stuff
 #### X3DAudio HRTF
